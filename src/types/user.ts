@@ -11,7 +11,12 @@ export interface UserBrief {
   nickname: string
   avatarUrl?: string
   email?: string
-  mobile?: string
   bio?: string
   createdPlanets?: string[]
+  mobile?:string
+}
+
+export interface TokenState {
+  token: string | null
+  tokenExpireAt: number
 }

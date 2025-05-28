@@ -69,7 +69,6 @@ const registerForm = ref<RegisterForm>({
 const handleRegister = async () => {
   const success = await userStore.register(registerForm.value)
   if (success) {
-    alert('量子纠缠注册成功，请进行时空验证')
     router.push('/login')
   } else {
     alert('星门连接失败，请检查跃迁参数')

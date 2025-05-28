@@ -15,12 +15,25 @@
         </div>
         <div class="form-group">
           <label class="stellar-label">维度密钥：</label>
-          <input
-            v-model="loginForm.password"
-            type="password"
-            class="stellar-input"
-            placeholder="请输入密码"
-          />
+          <div class="password-wrapper">
+            <input
+              v-model="loginForm.password"
+              :type="showPassword ? 'text' : 'password'"
+              class="stellar-input"
+              placeholder="请输入密码"
+            />
+            <i
+              class="password-toggle fas"
+              :class="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+              @click="togglePassword"
+            ></i>
+          </div>
+          <div class="stellar-remember">
+            <label class="cyber-checkbox">
+              <input type="checkbox" v-model="rememberMe">
+              <span class="cyber-glitch" data-text="记忆裂痕">记住密码</span>
+            </label>
+          </div>
         </div>
         <button type="submit" class="stellar-button">曲速登录</button>
       </form>
@@ -33,12 +46,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import CryptoJS from 'crypto-js'
 
 const router = useRouter()
 const userStore = useUserStore()
+const showPassword = ref(false)
+const rememberMe = ref(false)
+const ENCRYPT_KEY = import.meta.env.VITE_CRYPTO_KEY || 'StellarLock#2099'
+// 初始化时读取存储的凭证
+onMounted(() => {
+  const saved = localStorage.getItem('stellar_credentials')
+  if (saved) {
+    try {
+      const bytes = CryptoJS.AES.decrypt(saved, ENCRYPT_KEY)
+      const credentials = JSON.parse(bytes.toString(CryptoJS.enc.Utf8))
+      loginForm.value.nickname = credentials.nickname
+      loginForm.value.password = credentials.password
+      rememberMe.value = true
+    } catch (e) {
+      localStorage.removeItem('stellar_credentials')
+      console.error('无法解密存储的凭证，已清除存储', e)
+    }
+  }
+})
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
 
 interface LoginForm {
   nickname: string
@@ -53,7 +90,16 @@ const loginForm = ref<LoginForm>({
 const handleLogin = async () => {
   const success = await userStore.login(loginForm.value)
   if (success) {
-    // 登录成功后的跳转，这里示例跳转到首页
+    if (rememberMe.value) {
+      const ciphertext = CryptoJS.AES.encrypt(
+        JSON.stringify(loginForm.value),
+        ENCRYPT_KEY
+      ).toString()
+      localStorage.setItem('stellar_credentials', ciphertext)
+    } else {
+      localStorage.removeItem('stellar_credentials')
+    }
+    //登录成功后的跳转，这里示例跳转到首页
     const redirectPath = router.currentRoute.value.query.redirect || '/'
     router.push(redirectPath as string)
   } else {
@@ -188,5 +234,113 @@ const handleLogin = async () => {
 
 .stellar-link:hover {
   text-shadow: 0 0 15px #00f7ff80;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3d67ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  z-index: 10;
+}
+
+.password-toggle:hover {
+  color: #00f7ff;
+  text-shadow: 0 0 8px rgba(0, 247, 255, 0.5);
+}
+
+/* 调整原有输入框的padding防止文字被遮挡 */
+.stellar-input {
+  padding-right: 0; /* 新增 */
+}
+
+.stellar-remember {
+  margin-top: 10px;
+  display: flex;
+  margin-left: 15rem;
+  padding: 0 auto;
+}
+
+.cyber-checkbox {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+}
+
+.cyber-checkbox input {
+  opacity: 0;
+  position: absolute;
+
+}
+
+.cyber-checkbox span {
+  position: relative;
+  padding-left: 1.2rem;
+  color: #7d9bff;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.cyber-checkbox span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  border: 1px solid #3d67ff;
+  background: rgba(25, 30, 70, 0.6);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.cyber-checkbox span::after {
+  content: '✓';
+  position: absolute;
+  left: 3px;
+  top: 45%;
+  transform: translateY(-50%);
+  color: #00f7ff;
+  opacity: 0;
+  font-size: 14px;
+  text-shadow: 0 0 8px #00f7ff;
+  transition: all 0.3s ease;
+}
+
+.cyber-checkbox input:checked + span::after {
+  opacity: 1;
+}
+
+.cyber-checkbox input:checked + span::before {
+  border-color: #00f7ff;
+  box-shadow: 0 0 12px #00f7ff80;
+}
+
+.cyber-glitch {
+  position: relative;
+}
+
+.cyber-glitch::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  text-shadow: 3px 0 #3d67ff;
+  background: rgba(12, 15, 43, 0.8);
+  overflow: hidden;
+}
+
+@keyframes glitch-1 {
+  0% { clip: rect(10px, 999px, 20px, 0) }
+  100% { clip: rect(0, 999px, 15px, 0) }
 }
 </style>

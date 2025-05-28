@@ -7,6 +7,7 @@ const TIME_OUT = 20000 // 请求超时时间
 const service: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: TIME_OUT,
+  withCredentials: false, // 新增此项
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
   }
@@ -16,9 +17,10 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config) => {
     // 从 Pinia store 或 localStorage 获取 token
-    const token = localStorage.getItem('token') || ''
+    const token = localStorage.getItem('jwt_token') || ''
+    console.log('当前请求头携带的 Token:', token)
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = token
     }
     return config
   },
@@ -47,7 +49,7 @@ service.interceptors.response.use(
         case 401:
           errorMessage = '登录已过期，请重新登录'
           // 跳转登录页
-          window.location.href = '/login'
+          // window.location.href = '/login'
           break
         case 403:
           errorMessage = '权限不足，请联系管理员'

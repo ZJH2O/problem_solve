@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import StellarAlert from './components/StellarAlert.vue';
 import { RouterView } from 'vue-router'
+
+
 </script>
 
 <template>
   <div class="background-layer">
     <div class="main-container">
+      <StellarAlert />
       <RouterView />
     </div>
   </div>

@@ -49,8 +49,18 @@ const router = createRouter({
           path: '/planets/:id',
           component: () => import('@/views/PlanetDetailView.vue'),
           props: true
+        },
+        {
+          path:'/user',
+          name:'user',
+          children: [
+            {
+              path: 'profile',
+              name: 'UserProfile',
+              component: () => import('@/views/UserProfileView.vue'),
+            }
+          ],
         }
-
       ],
       meta: {
         requiresAuth: true
