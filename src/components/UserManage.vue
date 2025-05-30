@@ -38,7 +38,7 @@
         {{ userStore.error }}
       </div>
 
-      <!-- 信息编辑表单 -->
+      <!-- 信息编辑表单
       <form @submit.prevent="handleProfileUpdate" class="profile-form">
         <div class="form-group">
           <label for="nickname">昵称:</label>
@@ -70,7 +70,7 @@
         </div>
 
         <button type="submit" class="submit-btn">更新资料</button>
-      </form>
+      </form> -->
 
       <!-- 账户管理 -->
       <div class="account-management">

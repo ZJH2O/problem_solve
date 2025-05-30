@@ -86,27 +86,6 @@ export const useUserStore = defineStore('user', {
         this.loading = false
       }
     },
-    // async refreshToken() {
-    //   try {
-    //     const res = await service.post<ResponseMessage<LoginResponse>>('/auth/refresh')
-    //     if (res.data.code === 200) {
-    //       this.token = res.data.data.token
-    //       this.tokenExpireAt = res.data.data.expireAt
-    //       localStorage.setItem('jwt_token', this.token)
-    //       this.scheduleTokenRefresh()
-    //       return true
-    //     }
-    //   } catch (error) {
-    //     this.logout()
-    //     throw error
-    //   }
-    // },
-    // scheduleTokenRefresh() {
-    //   const refreshTime = this.tokenExpireAt - Date.now() - 300_000 // 提前5分钟刷新
-    //   if (refreshTime > 0) {
-    //     setTimeout(() => this.refreshToken(), refreshTime)
-    //   }
-    // },
     async fetchUserInfo() {
       try {
         const res = await service.get<ResponseMessage<UserBrief>>('/user/userinfo')
@@ -139,6 +118,54 @@ export const useUserStore = defineStore('user', {
         this.loading = false
       }
     },
+    async updateNickname(nickname: string){
+      this.loading = true
+      try{
+        const res = await service.put<ResponseMessage>('/user/updatenickname', { nickname });
+        if (res.data.code === 200) {
+          this.userInfo = { ...this.userInfo, nickname } as UserBrief;
+          return true;
+        }
+        return false;
+      }catch(error){
+        this.error = (error as Error).message
+        throw error
+      }finally{
+        this.loading = false
+      }
+    },
+    async updataAvatarUrl(avatarUrl: string){
+      this.loading = true
+      try{
+        const res = await service.put<ResponseMessage>('/user/updateurl', {avatarUrl})
+        if(res.data.code === 200){
+          this.userInfo = { ...this.userInfo, avatarUrl }as UserBrief;
+          return true
+        }
+        return false
+      }catch(error){
+        this.error = (error as Error).message
+        throw error
+      }finally{
+        this.loading = false
+      }
+    },
+    async updateBio(bio: string){
+      this.loading = true
+      try{
+        const res = await service.put<ResponseMessage>('/user/updatebio', { bio })
+        if(res.data.code === 200){
+          this.userInfo = { ...this.userInfo, bio } as UserBrief;
+          return true
+        }
+        return false
+      }catch(error){
+        this.error = (error as Error).message
+        throw error
+      }finally{
+        this.loading = false
+      }
+    },
     async updatePassword(data:{
       oldpassword:string;
       newpassword:string;
@@ -158,22 +185,6 @@ export const useUserStore = defineStore('user', {
         throw error
       }finally{
         this.loading = false;
-      }
-    },
-    async updateMobile(mobile: string) {
-      this.loading = true
-      try {
-        const res = await service.put<ResponseMessage>('/user/updatemobile', { mobile:mobile })
-        if (res.data.code === 200) {
-          this.logout()
-          return true
-        }
-        return false
-      } catch (error) {
-        this.error = (error as Error).message
-        throw error
-      } finally {
-        this.loading = false
       }
     },
     async updateEmail(email: string) {

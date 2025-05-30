@@ -7,13 +7,15 @@ export interface UserState {
 }
 
 export interface UserBrief {
-  userId: string
+  userId: number
   nickname: string
   avatarUrl?: string
   email?: string
   bio?: string
   createdPlanets?: string[]
   mobile?:string
+  createdAt?: string
+  favorite_planet_id?: string
 }
 
 export interface TokenState {

@@ -95,3 +95,14 @@ export interface Attachment {
     duration?: number; // 音视频时长
   };
 }
+
+
+export interface KnowledgePlanetDto {
+  planetId?: string
+  title: string
+  creatorId: string
+  themeType: string
+  coverUrl?: string
+  visibility?: string
+  description?: string
+}

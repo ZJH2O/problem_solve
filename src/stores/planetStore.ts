@@ -1,147 +1,93 @@
 import { defineStore } from 'pinia';
-import type{ Planet,CommentDraft, ReaderComment, } from '@/types/planet';
+import type{ KnowledgePlanetDto } from '@/types/planet';
+import type { ResponseMessage } from '@/types/api';
+import service from '@/utils/request';
 
-
-
-type PlanetCreatePayload = Omit<Planet, 'id' | 'createdAt'>;
-type PlanetUpdatePayload = Partial<PlanetCreatePayload> & { id: string };
 
 export const usePlanetStore = defineStore('planet', {
   state: () => ({
-    planets: [
-      { id: 1, name: '前端星球', visitors: 1500, description: '前端开发技术交流' ,createdAt: new Date('2023-01-01'),details: {
-        recommendedKnowledge: [],
-        authorMessages: [],
-        readerComments: []
-      }},
-      { id: 2, name: '后端星球', visitors: 2200, description: '服务器端技术讨论' ,createdAt: new Date('2023-01-01'),details: {
-        recommendedKnowledge: [],
-        authorMessages: [],
-        readerComments: []
-      }},
-      { id: 3, name: 'AI星球', visitors: 3000, description: '人工智能研究' ,createdAt: new Date('2023-01-01'),details: {
-        recommendedKnowledge: [],
-        authorMessages: [],
-        readerComments: []
-      }}
-    ] as Planet[]
+    planets: [] as KnowledgePlanetDto[],
+    currentPlanet: null as KnowledgePlanetDto | null
   }),
-  getters: {
-    maxVisitors: (state) => Math.max(...state.planets.map(p => p.visitors)),
-    minVisitors: (state) => Math.min(...state.planets.map(p => p.visitors)),
-    sortedPlanets: (state): Planet[] => {
-      return [...state.planets].sort((a, b) =>
-        b.createdAt.getTime() - a.createdAt.getTime()
-      );
-    }
-  },
-
   actions:{
-    getPlanetById(id: number) {
-      return this.planets.find(p => p.id === id);
-    },
-
-    incrementVisitors(id: number) {
-      const planet = this.planets.find(p => p.id === id);
-      if (planet) {
-        planet.visitors++;
-      }
-    },
-
-    addComment(planetId: number, comment: CommentDraft) {
-      const planet = this.planets.find(p => p.id === planetId);
-      if (planet) {
-        const newComment: ReaderComment = {
-          ...comment,
-          id: `comment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // ID 生成方法
-          createdAt: new Date(),
-          status: 'published',
-          replies: [],
-          upvotes: 0,
-          reactions: {
-            like: 0,
-            disagree:  0
-          }
-        };
-
-        planet.details.readerComments.push(newComment);
-      }
-    },
-
-    toggleReaction(planetId: number, commentId: string, type: 'like') {
-      const planet = this.planets.find(p => p.id === planetId);
-      const comment = planet?.details?.readerComments.find(c => c.id === commentId);
-      if (comment) {
-        comment.reactions[type] = (comment.reactions[type] || 0) + 1;
-      }
-    },
-
-    addPlanet(payload: PlanetCreatePayload) {
-      const newPlanet: Planet = {
-        ...payload,
-        id: this.planets.length + 1,
-        createdAt: new Date(),
-        status: 'draft',
-        details: {
-          recommendedKnowledge: [],
-          authorMessages: [],
-          readerComments: []
+    async init(){
+      try{
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto[]>>('/user/loadingplanets')
+        if (res.data.code === 200) {
+          this.planets = res.data.data || [];
+          return true;
         }
-      };
-      this.planets.push(newPlanet);
-      return newPlanet.id;
+        return false
+      }catch (error) {
+        console.error('初始化星球列表失败:', error);
+      }
     },
-
-    deletePlanet(id:string|number){
-      this.planets = this.planets.filter(p =>p.id !==id);
-    },
-
-    updatePlanet(payload: PlanetUpdatePayload){
-      const index = this.planets.findIndex(p => p.id === payload.id);
-      if(index === -1) return;
-
-      this.planets[index] = {
-        ...this.planets[index],
-        ...payload,
-        id: payload.id
+     // 创建星球
+    async createPlanet(payload: KnowledgePlanetDto) {
+      try {
+        const response = await service.post<ResponseMessage<string>>(
+          '/planet/create',
+          payload
+        )
+        if (response.data.code === 200) {
+          return response.data.data // 返回创建的星球ID
+        }
+        throw new Error(response.data.message || '创建失败')
+      } catch (error) {
+        throw new Error(`请求失败: ${error}`)
       }
     },
 
-    importPlanets(planets: Planet[]){
-      this.planets = planets.map(p => ({
-        ...p,
-        // 确保导入数据完整性
-        details: p.details ? {
-          recommendedKnowledge: p.details.recommendedKnowledge || [],
-          authorMessages: p.details.authorMessages || [],
-          readerComments: p.details.readerComments || []
-        } : {
-          recommendedKnowledge: [],
-          authorMessages: [],
-          readerComments: []
+     // 获取星球信息
+     async getPlanetByTitle(title: string) {
+      try {
+        const response = await service.post<ResponseMessage<KnowledgePlanetDto>>(
+          '/planet/planetinfo',
+          { title }
+        )
+        if (response.data.code === 200) {
+          this.currentPlanet = response.data.data
+          return response.data.data
         }
-      }));
+        throw new Error(response.data.message || '获取信息失败')
+      } catch (error) {
+        this.currentPlanet = null
+        throw new Error(`请求失败: ${error}`)
+      }
     },
 
-    resetToDefault(){
-      this.planets = [
-        { id: 1, name: '前端星球', visitors: 1500, description: '前端开发技术交流' ,createdAt: new Date('2023-01-01'),details: {
-          recommendedKnowledge: [],
-          authorMessages: [],
-          readerComments: []
-        }},
-        { id: 2, name: '后端星球', visitors: 2200, description: '服务器端技术讨论' ,createdAt: new Date('2023-01-01'),details: {
-          recommendedKnowledge: [],
-          authorMessages: [],
-          readerComments: []
-        }},
-        { id: 3, name: 'AI星球', visitors: 3000, description: '人工智能研究' ,createdAt: new Date('2023-01-01'),details: {
-          recommendedKnowledge: [],
-          authorMessages: [],
-          readerComments: []
-        }}
-      ]
+    // 更新星球
+    async updatePlanet(payload: KnowledgePlanetDto) {
+      try {
+        if (!payload.planetId) throw new Error('缺少星球ID')
 
-    }
+        const response = await service.put<ResponseMessage<void>>(
+          '/planet/update',
+          payload
+        )
+        if (response.data.code === 200) {
+          return true
+        }
+        throw new Error(response.data.message || '更新失败')
+      } catch (error) {
+        throw new Error(`请求失败: ${error}`)
+      }
+    },
+
+    // 删除星球
+    async deletePlanet(planetId: string) {
+      try {
+        const response = await service.delete<ResponseMessage<string>>(
+          '/planet/delete',
+          { data: { planetId } }
+        )
+        if (response.data.code === 200) {
+          return response.data.data // 返回删除的星球ID
+        }
+        throw new Error(response.data.message || '删除失败')
+      } catch (error) {
+        throw new Error(`请求失败: ${error}`)
+      }
+    },
   }
 });
