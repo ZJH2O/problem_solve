@@ -1,6 +1,5 @@
 <template>
   <div>
-    <button @click="handleLogout">knowledge</button>
     <KnowledgePlanet />
     <PlanetDataset />
   </div>
@@ -14,10 +13,7 @@ import PlanetDataset from '@/components/PlanetDataset.vue'
 const router = useRouter()
 const userStore = useUserStore()
 
-const handleLogout = async () => {
-  await userStore.logout()
-  router.push('/login')
-}
+
 </script>
 
 <style scoped lang="scss">

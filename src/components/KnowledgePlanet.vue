@@ -5,7 +5,7 @@
       :key="planet.planetId"
       class="planet"
       :style="planetStyle(planet)"
-      @click="navigateToPlanet(planet.planetId??'-1')"
+      @click="navigateToPlanet(planet)"
       @mouseenter="showTooltip(planet, $event)"
       @mouseleave="hideTooltip"
     >
@@ -19,7 +19,7 @@
     >
       <h3>{{ activeTooltip.contentTitle }}</h3>
       <p>{{ activeTooltip.description }}</p>
-      <p>访问人数: {{ activeTooltip.visitors }}</p>
+      <p>访问人数: {{ activeTooltip.visitCount }}</p>
     </div>
   </div>
 </template>
@@ -35,7 +35,7 @@ const store = usePlanetStore();
 interface TooltipData {
   contentTitle: string;
   description: string;
-  visitors: number;
+  visitCount: number;
   x: number;
   y: number;
 }
@@ -55,7 +55,7 @@ const planetStyle = (planet: KnowledgePlanetDto) => {
   // 2. 计算访问人数比例（0-1之间）
   const visitorRatio = maxVisitors.value === minVisitors.value
     ? 0.5 // 避免除以0的情况
-    : (planet.visitors - minVisitors.value) / (maxVisitors.value - minVisitors.value);
+    : (planet.visitCount - minVisitors.value) / (maxVisitors.value - minVisitors.value);
 
   // 3. 在基础大小上根据访问人数增加尺寸（最大增加100px）
   const size = baseSize + visitorRatio * 100;
@@ -90,12 +90,15 @@ const tooltipStyle = computed(() => ({
   top: `${activeTooltip.value?.y}px`
 }));
 
-const navigateToPlanet = (id: string) => {
-  router.push(`/planets/${id}`);
+const navigateToPlanet = (planet:KnowledgePlanetDto) => {
+  store.currentPlanet = planet
+  if(planet.planetId)
+  store.VisitPlanet(planet.planetId)
+  router.push(`/planets/${planet.planetId}`);
 };
 
 onMounted(async () => {
-      await store.init();
+  await store.init();
 });
 </script>
 

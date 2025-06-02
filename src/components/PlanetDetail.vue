@@ -3,10 +3,10 @@
   <div class="planet-detail">
     <!-- 头部信息 -->
     <header class="detail-header">
-      <h1 class="title">{{ planet.name }}</h1>
+      <h1 class="title">{{ planet.contentTitle }}</h1>
       <div class="meta">
-        <span class="visitors">👥 {{ planet.visitors }} 访问</span>
-        <span class="created-at">📅 {{ formattedDate }}</span>
+        <span class="visitors">👥 {{ planet.visitCount }} 访问</span>
+        <span class="created-at">📅 {{ formatDateTime(planet.createTime) }}</span>
       </div>
     </header>
 
@@ -77,7 +77,7 @@
         </div>
         <div class="comment-list">
           <div
-            v-for="comment in planet.details?.readerComments"
+            v-for="comment in planet.contentDetail?.readerComments"
             :key="comment.id"
             class="comment-item"
           >
@@ -106,11 +106,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
-import type { Planet } from '@/types/planet';
+import type { KnowledgePlanetDto } from '@/types/planet';
 import { useUserStore } from '@/stores/user';
 
 const props = defineProps<{
-  planet: Planet;
+  planet: KnowledgePlanetDto;
 }>();
 
 const store = usePlanetStore();
@@ -118,9 +118,20 @@ const userStore = useUserStore();
 const newComment = ref('');
 
 // 计算属性
-const formattedDate = computed(() => {
-  return props.planet.createdAt?.toLocaleDateString() || '未知日期';
-});
+function formatDateTime(isoString:string) {
+  // 1. 创建Date对象解析ISO字符串
+  const date = new Date(isoString);
+
+  // 2. 提取日期时间组件
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份补零
+  const day = String(date.getDate()).padStart(2, '0'); // 日期补零
+  const hours = String(date.getHours()).padStart(2, '0'); // 小时补零
+  const minutes = String(date.getMinutes()).padStart(2, '0'); // 分钟补零
+
+  // 3. 组合成YYYY-MM-DD HH:mm格式
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
 
 const commentCount = computed(() => {
   return props.planet.details?.readerComments?.length || 0;

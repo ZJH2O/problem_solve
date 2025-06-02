@@ -22,14 +22,12 @@ const store = usePlanetStore();
 
 // 获取星球数据
 const planet = computed(() => {
-  return store.getPlanetById(Number(route.params.id));
+  return store.currentPlanet
 });
 
 // 访问量统计
 onMounted(() => {
-  if (planet.value) {
-    store.incrementVisitors(planet.value.id);
-  }
+
 });
 </script>
 

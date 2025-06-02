@@ -30,6 +30,10 @@
       </div>
     </div>
 
+    <!-- 固定在底部的评论发布器 -->
+    <div class="fixed-comment-publisher">
+      <CommentPublisher :galaxyId="galaxyId" :userId="currentUserId" />
+    </div>
     <!-- 编辑对话框 -->
     <GalaxyEditor
       v-model="showEditor"
@@ -42,11 +46,6 @@
       <section class="comment-section">
         <CommentList :galaxyId="galaxyId" :userId="currentUserId" />
       </section>
-    </div>
-
-    <!-- 固定在底部的评论发布器 -->
-    <div class="fixed-comment-publisher">
-      <CommentPublisher :galaxyId="galaxyId" :userId="currentUserId" />
     </div>
   </div>
 </template>

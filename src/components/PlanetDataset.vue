@@ -72,6 +72,7 @@ import { onMounted } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
 import AddDetail from '@/components/AddDetail.vue';
 import { useUserStore } from '@/stores/user';
+import type { KnowledgePlanetDto } from '@/types/planet';
 const store = usePlanetStore();
 const showMenu = ref(false);
 const showAddDialog = ref(false);
@@ -93,9 +94,10 @@ const handleAddSubmit = (data: {
   description: string;
   themeId: number
 }) => {
+  userStore.init()
   store.createPlanet({
     ...data,
-    userId: userStore.currentUser?.userId,
+    userId: userStore.userInfo?.userId??-1,
   });
   showAddDialog.value = false;
 };
@@ -126,7 +128,7 @@ const handleFileImport = async (e: Event) => {
       reader.onload = (e) => {
         const result = e.target?.result;
         if (typeof result === 'string') {
-          const data: Planet[] = JSON.parse(result);
+          const data: KnowledgePlanetDto[] = JSON.parse(result);
           store.planets = data;
         }
       };

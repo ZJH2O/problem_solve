@@ -70,7 +70,7 @@ const router = createRouter({
               component: () => import('@/views/GalaxyDetailView.vue'),
             }
           ]
-        }
+        },
       ],
       meta: {
         requiresAuth: true
