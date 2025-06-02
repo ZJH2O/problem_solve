@@ -1,5 +1,8 @@
 <template>
   <div class="galaxy-list-container">
+    <div class="creator-bg" v-if="galaxyStore.showCreator">
+      <GalaxyCreator @close="galaxyStore.showCreator = false" />
+    </div>
     <!-- 头部区域 -->
     <div class="galaxy-header">
       <div class="title-container">
@@ -36,7 +39,6 @@
       >
         <div class="card-header">
           <div class="galaxy-icon">
-            <i class="fas fa-stars"></i>
           </div>
           <div class="title-container">
             <h3 class="galaxy-name">{{ galaxy.name }}</h3>
@@ -51,11 +53,9 @@
 
           <div class="galaxy-meta">
             <div class="meta-item">
-              <i class="fas fa-user-astronaut"></i>
               <span>创建者: {{ galaxy.userId}}</span>
             </div>
             <div class="meta-item">
-              <i class="fas fa-planet-ringed"></i>
               <span>{{ galaxy.planets ? galaxy.planets.length : 0 }} 个知识星球</span>
             </div>
           </div>
@@ -63,11 +63,9 @@
 
         <div class="galaxy-actions">
           <button class="action-btn explore" @click.stop="exploreGalaxy(galaxy)">
-            <i class="fas fa-rocket"></i>
             探索星系
           </button>
           <button class="action-btn share" @click.stop="shareGalaxy(galaxy)">
-            <i class="fas fa-share-alt"></i>
             分享
           </button>
         </div>
@@ -84,16 +82,13 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { useGalaxyStore } from '@/stores/galaxy';
 import type { KnowledgeGalaxyDto } from '@/types/galaxy';
-
-export default defineComponent({
-  name: 'GalaxyList',
-
-  setup() {
-    const galaxyStore = useGalaxyStore();
+import GalaxyCreator from './GalaxyCreator.vue';
+import router from '@/router';
+const galaxyStore = useGalaxyStore();
     const searchTerm = ref('');
 
     // 初始化星系数据
@@ -115,6 +110,13 @@ export default defineComponent({
     // 处理星系操作
     const exploreGalaxy = (galaxy: KnowledgeGalaxyDto) => {
       console.log('探索星系:', galaxy.name);
+      galaxyStore.currentGalaxy = galaxy;
+      router.push({
+        name: 'GalaxyDetail', // 使用路由配置中的命名路由
+        params: {
+          galaxyId: galaxy.galaxyId // 传递星系ID作为动态参数
+        }
+      });
       // 这里可以导航到星系详情页
     };
 
@@ -125,31 +127,19 @@ export default defineComponent({
 
     const addGalaxy = () => {
       console.log('创建新星系');
-      // 实现创建新星系逻辑
+      galaxyStore.showCreator = true;
     };
 
-    return {
-      searchTerm,
-      filteredGalaxies,
-      exploreGalaxy,
-      shareGalaxy,
-      addGalaxy
-    };
-  },
 
-  filters: {
-    userIdFormat(userId: number): string {
-      return `用户${userId.toString().padStart(6, '0')}`;
-    }
-  }
-});
+
 </script>
 
 <style scoped>
 .galaxy-list-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  margin-top: -50px;
+  padding: 0 auto;
   font-family: 'Space Grotesk', sans-serif;
 }
 
@@ -159,7 +149,13 @@ export default defineComponent({
   overflow: hidden;
   border-radius: 16px;
   padding: 2rem;
-  background: linear-gradient(135deg, #0c1445 0%, #1a237e 50%, #311b92 100%);
+  background: linear-gradient(
+    15deg,            /* 倾斜光带 */
+    #000000 0%,       /* 深空黑 */
+    #333333 20%,      /* 宇宙灰 */
+    #001F3F 45%,      /* 暗物质蓝 */
+    #000000 80%       /* 深空黑 */
+  );
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -169,19 +165,7 @@ export default defineComponent({
   margin-bottom: 1.5rem;
 }
 
-.starry-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 10px),
-    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 5px);
-  background-size: 100px 100px, 50px 50px;
-  background-position: 0 0, 30px 30px;
-  opacity: 0.3;
-}
+
 
 .main-title {
   font-size: 2.5rem;
@@ -268,7 +252,11 @@ export default defineComponent({
 }
 
 .galaxy-card {
-  background: linear-gradient(145deg, #121c42, #0e1538);
+  background: radial-gradient(
+  ellipse at 30% 20%,
+  rgba(15, 10, 60, 0.8) 0%,
+  rgba(0, 0, 0, 1) 90%
+);
   border-radius: 16px;
   overflow: hidden;
   padding: 1.5rem;
@@ -447,4 +435,6 @@ export default defineComponent({
   transform: translateY(-3px);
   box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
 }
+
+
 </style>

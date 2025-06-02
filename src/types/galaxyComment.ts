@@ -1,20 +1,21 @@
 // 基本评论结构
 export interface GalaxyCommentDto {
-  commentId: number
+  galaxyCommentId: number
   userId: number
   galaxyId: number
   content: string
   parentId?: number
   replyToUserId?: number
-  likes: number
+  likeCount: number
   isLiked?: boolean
   createdAt?: string
   replies?: GalaxyCommentDto[]
+  createTime?:string
 }
 
 // 分页请求参数
 export interface CommentListRequest {
-  galaxyId: number
+  galaxyId: string
   page?: number
   size?: number
   userId?: number
@@ -23,12 +24,12 @@ export interface CommentListRequest {
 // 点赞操作参数
 export interface LikeOperation {
   userId: number
-  commentId: number
+  galaxyCommentId: number
 }
 
 // 删除评论参数
 export interface DeleteCommentParams {
-  commentId: number
+  galaxyCommentId: number
   userId: number
 }
 

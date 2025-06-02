@@ -37,17 +37,17 @@
         <div class="planet-list">
           <div
             v-for="planet in planets"
-            :key="planet.planetId"
+            :key="planet.id"
             class="planet-item"
           >
             <div class="planet-info">
-              <span class="name">{{ planet.contentTitle }}</span>
-              <!-- <span class="visitors">👥 {{ planet. }}</span> -->
+              <span class="name">{{ planet.name }}</span>
+              <span class="visitors">👥 {{ planet.visitors }}</span>
             </div>
             <div class="planet-actions">
               <button
                 class="action-btn delete"
-                @click="deletePlanet(planet.planetId)"
+                @click="deletePlanet(planet.id)"
               >
                 删除
               </button>
@@ -71,16 +71,16 @@ import { ref, computed } from 'vue';
 import { onMounted } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
 import AddDetail from '@/components/AddDetail.vue';
-import { useUserStore } from '@/stores/user';
+import type {Planet} from '@/types/planet';
 const store = usePlanetStore();
 const showMenu = ref(false);
 const showAddDialog = ref(false);
-const userStore = useUserStore()
+
 const planets = computed(() => store.planets);
 onMounted(() => {
   // ✅ 在组件上下文中验证 Store 可用性
   console.log('[Debug] Store methods:', {
-    addPlanet: store.createPlanet,
+    addPlanet: store.addPlanet,
     deletePlanet: store.deletePlanet
   });
 });
@@ -89,20 +89,29 @@ const toggleMenu = () => {
 };
 
 const handleAddSubmit = (data: {
-  contentTitle: string;
+  name: string;
   description: string;
-  themeId: number
+  visitors: number
 }) => {
-  store.createPlanet({
-    ...data,
-    userId: userStore.currentUser?.userId,
+  store.addPlanet({
+    name: data.name,
+    description: data.description,
+    visitors: data.visitors
   });
   showAddDialog.value = false;
 };
 
-const deletePlanet = (planetId:string) => {
+const addSamplePlanet = () => {
+  store.addPlanet({
+    name: `新星球 ${planets.value.length + 1}`,
+    description: '新建的星球描述',
+    visitors: Math.floor(Math.random() * 5000),
+  });
+};
+
+const deletePlanet = (id: number|string) => {
   if (confirm('确定要删除这个星球吗？')) {
-    store.deletePlanet(planetId);
+    store.deletePlanet(id);
   }
 };
 

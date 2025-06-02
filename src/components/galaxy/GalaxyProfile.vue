@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect, onMounted } from 'vue'
+import { ref, watchEffect, onMounted, computed } from 'vue'
 import { useGalaxyStore } from '@/stores/galaxy'
 import type { KnowledgeGalaxyDto } from '@/types/galaxy';
 
@@ -24,78 +24,108 @@ watchEffect(async () => {
   }
 })
 
+const planetCount = computed(()=>{
+  return galaxyStore.currentGalaxy?.planets?.length || 0
+})
+
 // 页面加载动画控制
 onMounted(() => {
   setTimeout(() => {
     animationComplete.value = true
   }, 500)
 })
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '未知纪元';
+  return new Date(dateString).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
 </script>
 
 <template>
-  <div class="galaxy-profile-container" :class="{ 'animation-complete': animationComplete }">
+  <div class="galaxy-profile-container cosmic-bg" :class="{ 'animation-complete': animationComplete }">
+    <!-- 宇宙背景粒子 -->
+    <div class="cosmic-particles"></div>
+
     <!-- 加载状态 -->
     <div v-if="isLoading" class="loading-container">
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <p class="loading-text">正在探索宇宙...</p>
+      <div class="quantum-loader">
+        <div class="quantum-sphere"></div>
+        <p class="loading-text">曲率引擎启动中...</p>
       </div>
     </div>
-    <div class="galaxy-card" v-if="galaxy">
-      <div class="glow-effect"></div>
+
+    <div class="galaxy-card stardust-border" v-if="galaxy">
+      <!-- 星系核心光效 -->
+      <div class="galaxy-core-glow"></div>
 
       <div class="card-header">
-        <h2 class="galaxy-name">{{ galaxy.name }}</h2>
+        <h2 class="galaxy-name nebula-text">{{ galaxy.name }}</h2>
         <div class="tag-container">
-          <span class="tag" >
-            {{ galaxy.label }}
+          <span class="cosmic-tag">
+            {{ galaxy.label || '未分类星域' }}
+          </span>
+          <span class="permission-tag" :class="galaxy.permission === 0 ? 'public' : 'private'">
+            {{ galaxy.permission === 0 ? '公共星域' : '私有星域' }}
           </span>
         </div>
       </div>
 
+      <!-- 星系信息 -->
       <div class="galaxy-info">
-        <div class="meta-info">
-          <div class="info-item">
-            <span class="info-label">创建者</span>
-            <span class="info-value">{{ galaxy.userId }}</span>
+        <div class="meta-grid">
+          <div class="info-cell">
+            <span class="info-label">星域管理员</span>
+            <span class="info-value hologram-text">{{ galaxy.userId || '未知文明' }}</span>
           </div>
 
-          <div class="info-item">
-            <span class="info-label">包含星球</span>
-            <div class="planets-list">
-              <span class="planet" v-for="(planet, index) in galaxy.planets || []" :key="index">
+          <div class="info-cell">
+            <span class="info-label">星历纪元</span>
+            <span class="info-value hologram-text">{{ formatDate(galaxy.createTime) }}</span>
+          </div>
+
+          <div class="info-cell full-width">
+            <span class="info-label">附属行星</span>
+            <div class="planets-grid">
+              <span
+                v-for="(planet, index) in galaxy.planets || []"
+                :key="index"
+                class="planet-badge"
+              >
                 {{ planet }}
               </span>
-              <span v-if="!(galaxy.planets && galaxy.planets.length)" class="empty-planet">暂无星球</span>
+              <span v-if="!(galaxy.planets && galaxy.planets.length)" class="empty-planet">
+                ⚠️ 未探测到行星
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- 星系数据可视化 -->
-        <div class="galaxy-stats">
-          <div class="stat-item">
-            <div class="stat-value">{{ (galaxy.planets || []).length }}</div>
-            <div class="stat-label">星球数量</div>
+        <!-- 星系数据 -->
+        <div class="cosmic-stats">
+          <div class="stat-orb">
+            <div class="stat-value">{{ planetCount}}</div>
+            <div class="stat-label">行星数量</div>
           </div>
-          <!-- <div class="stat-item">
-            <div class="stat-value">{{ galaxy.stars || 0 }}</div>
-            <div class="stat-label">恒星数量</div>
+          <!-- <div class="stat-orb">
+            <div class="stat-value">{{ galaxy.members || 0 }}</div>
+            <div class="stat-label">探索者</div>
           </div>
-          <div class="stat-item">
-            <div class="stat-value">{{ galaxy.diameter || 0 }} ly</div>
-            <div class="stat-label">直径</div>
+          <div class="stat-orb">
+            <div class="stat-value">{{ galaxy.visits || 0 }}</div>
+            <div class="stat-label">访问量</div>
           </div> -->
         </div>
       </div>
-
-      <!-- 装饰性网格背景 -->
-      <div class="grid-bg"></div>
     </div>
 
     <!-- 错误状态 -->
-    <div v-else class="error-container">
-      <div class="error-icon">!</div>
-      <p class="error-text">无法获取星系数据</p>
+    <div v-else class="quantum-error">
+      <div class="error-icon">🛸</div>
+      <p class="error-text">曲率引擎故障！无法连接星域数据库</p>
     </div>
   </div>
 </template>

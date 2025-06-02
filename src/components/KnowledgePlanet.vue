@@ -2,14 +2,14 @@
   <div class="planets-container">
     <div
       v-for="planet in planets"
-      :key="planet.id"
+      :key="planet.planetId"
       class="planet"
       :style="planetStyle(planet)"
-      @click="navigateToPlanet(planet.id)"
+      @click="navigateToPlanet(planet.planetId??'-1')"
       @mouseenter="showTooltip(planet, $event)"
       @mouseleave="hideTooltip"
     >
-      {{ planet.name }}
+      {{ planet.contentTitle }}
     </div>
 
     <div
@@ -17,7 +17,7 @@
       class="tooltip"
       :style="tooltipStyle"
     >
-      <h3>{{ activeTooltip.name }}</h3>
+      <h3>{{ activeTooltip.contentTitle }}</h3>
       <p>{{ activeTooltip.description }}</p>
       <p>访问人数: {{ activeTooltip.visitors }}</p>
     </div>
@@ -25,27 +25,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
 import { useRouter } from 'vue-router';
-
+import type{ KnowledgePlanetDto } from '@/types/planet';
 const router = useRouter();
 const store = usePlanetStore();
 
 interface TooltipData {
-  name: string;
+  contentTitle: string;
   description: string;
   visitors: number;
   x: number;
   y: number;
 }
 
-interface Planet {
-  id: number;
-  name: string;
-  description: string;
-  visitors: number;
-}
 const activeTooltip = ref<TooltipData | null>(null);
 const tooltipPosition = ref({ x: 0, y: 0 });
 
@@ -53,19 +47,33 @@ const planets = computed(() => store.planets);
 const maxVisitors = computed(() => store.maxVisitors);
 const minVisitors = computed(() => store.minVisitors);
 
-const planetStyle = (planet: Planet) => {
-  const sizeScale = (planet.visitors - minVisitors.value) / (maxVisitors.value - minVisitors.value);
-  const colorScale = sizeScale * 120; // HSL色相值变化范围
+// 修改后的星球样式计算
+const planetStyle = (planet: KnowledgePlanetDto) => {
+  // 1. 设置基础大小（假设大小）
+  const baseSize = 100; // 基础大小为100px
+
+  // 2. 计算访问人数比例（0-1之间）
+  const visitorRatio = maxVisitors.value === minVisitors.value
+    ? 0.5 // 避免除以0的情况
+    : (planet.visitors - minVisitors.value) / (maxVisitors.value - minVisitors.value);
+
+  // 3. 在基础大小上根据访问人数增加尺寸（最大增加100px）
+  const size = baseSize + visitorRatio * 100;
+
+  // 4. 颜色计算（根据访问人数比例变化）
+  const hue = visitorRatio * 120; // HSL色相值变化范围（0-120）
 
   return {
-    width: `${50 + sizeScale * 150}px`,
-    height: `${50 + sizeScale * 150}px`,
-    backgroundColor: `hsl(${colorScale}, 70%, 50%)`,
-    cursor: 'pointer'
+    width: `${size}px`,
+    height: `${size}px`,
+    backgroundColor: `hsl(${hue}, 70%, 50%)`,
+    cursor: 'pointer',
+    fontSize: `${Math.max(12, 14 * visitorRatio)}px` // 文字大小也根据访问人数变化
   };
 };
 
-const showTooltip = (planet: Planet, event: MouseEvent) => {
+// 其余方法保持不变...
+const showTooltip = (planet: KnowledgePlanetDto, event: MouseEvent) => {
   activeTooltip.value = {
     ...planet,
     x: event.clientX + 10,
@@ -82,9 +90,13 @@ const tooltipStyle = computed(() => ({
   top: `${activeTooltip.value?.y}px`
 }));
 
-const navigateToPlanet = (id: number) => {
+const navigateToPlanet = (id: string) => {
   router.push(`/planets/${id}`);
 };
+
+onMounted(async () => {
+      await store.init();
+});
 </script>
 
 <style scoped>
@@ -94,6 +106,9 @@ const navigateToPlanet = (id: number) => {
   gap: 2rem;
   padding: 2rem;
   position: relative;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
 }
 
 .planet {
@@ -103,32 +118,50 @@ const navigateToPlanet = (id: number) => {
   justify-content: center;
   color: white;
   font-weight: bold;
-  transition: transform 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .planet:hover {
   transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255,255,255,0.5);
+  z-index: 10;
 }
 
 .tooltip {
   position: fixed;
-  background: white;
-  border: 1px solid #ddd;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #00eeff;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 0 15px rgba(0, 195, 255, 0.5);
   pointer-events: none;
   z-index: 100;
-  max-width: 250px;
+  max-width: 300px;
+  color: #b6f9ff;
+  backdrop-filter: blur(5px);
 }
 
 .tooltip h3 {
   margin: 0 0 0.5rem 0;
-  color: #333;
+  color: #00eeff;
+  border-bottom: 1px solid rgba(0, 238, 255, 0.3);
+  padding-bottom: 0.5rem;
 }
 
 .tooltip p {
-  margin: 0.2rem 0;
-  color: #666;
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.tooltip p:last-child {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #ff6b6b;
 }
 </style>

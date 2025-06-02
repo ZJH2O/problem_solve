@@ -1,121 +1,99 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useGalaxyStore } from '@/stores/galaxy'
-import type { KnowledgeGalaxyDto } from '@/types/galaxy'
-import { useUserStore } from '@/stores/user'
-
-const userStore = useUserStore()
-const galaxyStore = useGalaxyStore()
-
-// 表单数据及验证
-const formData = ref<KnowledgeGalaxyDto>({
-  userId: userStore.userInfo?.userId || -1,
-  name: '',
-  label: '',
-  permission: 1
-})
-
-// 星流动画星星数组
-
-const isSubmitting = ref(false)
-// 提交表单
-const submit = async () => {
-  try {
-    const id = await galaxyStore.createGalaxy(formData.value)
-    alert(`星系创建成功！ID: ${id}`)
-    formData.value = { ...formData.value, name: '', label: '' } // 重置表单
-  } catch (error) {
-    console.error('创建星系失败:', error)
-    alert(`创建失败: ${error || '未知错误'}`)
-  }
-}
-
-
-</script>
-
 <template>
-  <div class="galaxy-creator">
-    <!-- 宇宙背景 -->
-    <div class="cosmic-bg"></div>
+  <!-- 悬浮弹窗容器 -->
+  <div class="galaxy-modal" :class="{ 'is-active': isOpen }">
+    <!-- 遮罩层 -->
+    <div class="modal-mask" @click="handleClose"></div>
 
-    <div class="creator-container">
-      <div class="creator-header">
-        <h1 class="creator-title">🌌 星系创建引擎</h1>
-        <p class="creator-subtitle">正在初始化星区坐标系统...</p>
+    <!-- 弹窗内容 -->
+    <div class="modal-content" ref="modalContent">
+      <!-- 顶部标题栏（移除拖拽事件） -->
+      <div class="modal-header">
+        <h2 class="modal-title">🌌 星系创建引擎</h2>
+        <button class="close-btn" @click="handleClose"></button>
       </div>
 
-      <form class="creator-form" @submit.prevent="submit">
-        <!-- 输入框组 -->
-        <div class="form-group">
-          <label class="form-label">星系名称</label>
-          <div class="input-wrapper">
-            <input
-              v-model="formData.name"
-              class="form-input"
-              placeholder="请输入星系核心标识符"
-              required
-              :disabled="!userStore.userInfo"
-            >
-            <span class="input-glow"></span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">星系标签</label>
-          <div class="input-wrapper">
-            <input
-              v-model="formData.label"
-              class="form-input"
-              placeholder="建议格式：#科学/#技术/#未来"
-              required
-            >
-            <span class="input-glow"></span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">访问权限</label>
-          <div class="select-wrapper">
-            <select v-model="formData.permission" class="form-select">
-              <option :value="1">🌟 公开星域</option>
-              <option :value="0">🌑 私有星区</option>
-            </select>
-            <span class="select-arrow"></span>
-          </div>
-        </div>
-
-        <!-- 提交按钮 -->
-        <button type="submit" class="submit-btn" :disabled="!formData.name || !formData.label">
-          <span class="button-text">启动创建程序</span>
-          <span class="loading-indicator" v-show="isSubmitting">
-            <div class="spinner"></div>
-          </span>
-        </button>
-      </form>
-
-      <!-- 实时预览 -->
-      <div class="galaxy-preview" v-if="formData.name || formData.label">
-        <h3 class="preview-title">✨ 星区配置预览</h3>
-        <div class="preview-grid">
-          <div class="preview-item">
-            <div class="item-label">星系名称</div>
-            <div class="item-value">{{ formData.name || '新宇宙-'+Date.now().toString().slice(-4) }}</div>
-          </div>
-
-          <div class="preview-item">
-            <div class="item-label">星系标签</div>
-            <div class="item-value">
-              <span v-if="formData.label" class="tag">{{ formData.label }}</span>
-              <span v-else class="tag empty">未设置标签</span>
+      <!-- 表单区域 -->
+      <div class="modal-body">
+        <form class="creator-form" @submit.prevent="submit">
+          <!-- 星系名称 -->
+          <div class="form-group">
+            <label class="form-label">星系名称</label>
+            <div class="input-wrapper">
+              <input
+                v-model="formData.name"
+                class="form-input"
+                placeholder="请输入星系核心标识符"
+                required
+              >
+              <span class="input-glow"></span>
             </div>
           </div>
 
-          <div class="preview-item">
-            <div class="item-label">访问权限</div>
-            <div class="item-value">
-              <span :class="`permission-badge ${formData.permission === 1 ? 'public' : 'private'}`">
-                {{ formData.permission === 1 ? '全宇宙可见' : '仅限授权访问' }}
-              </span>
+          <!-- 星系标签 -->
+          <div class="form-group">
+            <label class="form-label">星系标签</label>
+            <div class="input-wrapper">
+              <input
+                v-model="formData.label"
+                class="form-input"
+                placeholder="建议格式：#科学/#技术/#未来"
+                required
+              >
+              <span class="input-glow"></span>
+            </div>
+          </div>
+
+          <!-- 访问权限 -->
+          <div class="form-group">
+            <label class="form-label">访问权限</label>
+            <div class="select-wrapper">
+              <select v-model="formData.permission" class="form-select">
+                <option :value="1">🌟 公开星域</option>
+                <option :value="0">🌑 私有星区</option>
+              </select>
+              <span class="select-arrow"></span>
+            </div>
+          </div>
+
+          <!-- 提交按钮 -->
+          <button
+            type="submit"
+            class="submit-btn"
+            :disabled="!formData.name || !formData.label || isSubmitting"
+          >
+            <span class="button-text">
+              {{ isSubmitting ? '创建中...' : '启动创建程序' }}
+            </span>
+            <span class="loading-indicator" v-show="isSubmitting">
+              <div class="spinner"></div>
+            </span>
+          </button>
+        </form>
+
+        <!-- 实时预览 -->
+        <div class="galaxy-preview" v-if="formData.name || formData.label">
+          <h3 class="preview-title">✨ 星区配置预览</h3>
+          <div class="preview-grid">
+            <div class="preview-item">
+              <div class="item-label">星系名称</div>
+              <div class="item-value">{{ formData.name || '新宇宙-' + Date.now().toString().slice(-4) }}</div>
+            </div>
+
+            <div class="preview-item">
+              <div class="item-label">星系标签</div>
+              <div class="item-value">
+                <span v-if="formData.label" class="tag">{{ formData.label }}</span>
+                <span v-else class="tag empty">未设置标签</span>
+              </div>
+            </div>
+
+            <div class="preview-item">
+              <div class="item-label">访问权限</div>
+              <div class="item-value">
+                <span :class="`permission-badge ${formData.permission === 1 ? 'public' : 'private'}`">
+                  {{ formData.permission === 1 ? '全宇宙可见' : '仅限授权访问' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -127,71 +105,264 @@ const submit = async () => {
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useGalaxyStore } from '@/stores/galaxy'
+import type { KnowledgeGalaxyDto } from '@/types/galaxy'
+import { useUserStore } from '@/stores/user'
+
+const galaxyStore = useGalaxyStore()
+const userStore = useUserStore()
+
+// 弹窗状态
+const isOpen = ref(galaxyStore.showCreator)
+const modalContent = ref<HTMLElement | null>(null)
+
+// 表单数据
+const formData = ref<KnowledgeGalaxyDto>({
+  userId: userStore.userInfo?.userId || -1,
+  name: '',
+  label: '',
+  permission: 1
+})
+
+// 提交状态
+const isSubmitting = ref(false)
+
+// 关闭弹窗
+const handleClose = () => {
+  galaxyStore.showCreator = false
+}
+
+// 提交表单
+const submit = async () => {
+  if (!formData.value.name || !formData.value.label) return
+
+  isSubmitting.value = true
+
+  try {
+    const id = await galaxyStore.createGalaxy({
+      ...formData.value,
+      permission: formData.value.permission ?? 1 // Ensure permission is always defined
+    })
+    alert(`星系创建成功！ID: ${id}`)
+    handleClose()
+  } catch (error) {
+    console.error('创建星系失败:', error)
+    alert(`创建失败: ${error || '未知错误'}`)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+
+
+const restoreBodyScroll = () => {
+  document.body.style.overflow = ''
+}
+
+// 键盘ESC关闭弹窗
+const handleEscKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && isOpen.value) {
+    handleClose()
+  }
+}
+
+// 生命周期钩子
+onMounted(() => {
+  // 初始化弹窗位置
+  if (modalContent.value) {
+    modalContent.value.style.left = '50%'
+    modalContent.value.style.top = '50%'
+    modalContent.value.style.transform = 'translate(-50%, -50%)'
+  }
+
+
+
+  // 添加键盘事件监听
+  window.addEventListener('keydown', handleEscKey)
+
+  // 初始化星流动画
+  createStars()
+})
+
+onUnmounted(() => {
+  // 恢复滚动
+  restoreBodyScroll()
+
+  // 移除键盘事件监听
+  window.removeEventListener('keydown', handleEscKey)
+})
+
+// 监听弹窗状态变
+
+// 创建星流动画
+const createStars = () => {
+  const starsContainer = document.getElementById('stars')
+  if (!starsContainer) return
+
+  // 清除旧的星星
+  starsContainer.innerHTML = ''
+
+  // 创建新星星
+  for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div')
+    star.className = 'star'
+
+    // 随机大小和位置
+    const size = Math.random() * 3 + 1
+    const x = Math.random() * 100
+    const y = Math.random() * 100
+    const duration = Math.random() * 10 + 10
+
+    // 设置样式
+    star.style.width = `${size}px`
+    star.style.height = `${size}px`
+    star.style.left = `${x}%`
+    star.style.top = `${y}%`
+    star.style.boxShadow = `0 0 ${size * 2}px ${size}px rgba(255, 255, 255, 0.5)`
+    star.style.setProperty('--duration', `${duration}s`)
+
+    // 随机延迟
+    star.style.animationDelay = `${Math.random() * 5}s`
+
+    starsContainer.appendChild(star)
+  }
+}
+</script>
+
 <style scoped>
-/* 基础宇宙背景 */
-.cosmic-bg {
+/* 弹窗基础样式 */
+.galaxy-modal {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.galaxy-modal.is-active {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* 遮罩层 */
+.modal-mask {
+  position: absolute;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, #0a1a30, #050c20);
-  overflow: hidden;
-  z-index: -1;
+  background: linear-gradient(45deg, rgba(2, 8, 26, 0.9), rgba(5, 12, 32, 0.9));
+  backdrop-filter: blur(8px);
+  cursor: pointer;
 }
 
-/* 容器样式 */
-.creator-container {
-  max-width: 720px;
-  margin: 30px auto;
-  padding: 35px 40px;
-  background: rgba(5, 15, 35, 0.9);
-  border: 1px solid rgba(100, 200, 250, 0.1);
-  border-radius: 20px;
-  position: relative;
-  box-shadow: 0 0 60px rgba(0, 200, 255, 0.15),
-              inset 0 0 30px rgba(0, 200, 255, 0.05);
-  backdrop-filter: blur(10px);
+/* 弹窗内容（移除拖拽相关样式） */
+.modal-content {
+  position: absolute;
+  max-width: 800px;
+  width: 90%;
+  background: rgba(5, 15, 35, 0.95);
+  border-radius: 25px;
+  box-shadow:
+    0 0 120px rgba(0, 200, 255, 0.3),
+    inset 0 0 40px rgba(0, 200, 255, 0.1);
+  transform: translate(-50%, -50%) scale(0.9);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform, opacity;
+  overflow: auto;
 }
 
-/* 标题样式 */
-.creator-title {
+.galaxy-modal.is-active .modal-content {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* 顶部标题栏（移除拖拽样式） */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 40px;
+  border-bottom: 1px solid rgba(100, 200, 250, 0.1);
+}
+
+.modal-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 2.4rem;
+  font-size: 1.8rem;
   color: #7df9ff;
-  text-align: center;
-  margin-bottom: 15px;
-  text-shadow: 0 0 20px #00ffff;
+  text-shadow: 0 0 15px #00ffff;
+  margin: 0;
 }
 
-.creator-subtitle {
-  text-align: center;
-  color: #88aaff;
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-  opacity: 0.8;
+/* 关闭按钮 */
+.close-btn {
+  width: 45px;
+  height: 45px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease;
 }
 
-/* 表单样式 */
+.close-btn::before,
+.close-btn::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 4px;
+  background: linear-gradient(90deg, #a0d5ff, #7df9ff);
+  border-radius: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow:
+    0 0 15px rgba(160, 213, 255, 0.3),
+    inset 0 0 6px rgba(160, 213, 255, 0.2);
+  transition: background 0.3s ease;
+}
+
+.close-btn::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.close-btn:hover::before,
+.close-btn:hover::after {
+  background: linear-gradient(90deg, #7df9ff, #00ffff);
+  box-shadow:
+    0 0 25px rgba(125, 249, 255, 0.5),
+    inset 0 0 8px rgba(125, 249, 255, 0.3);
+}
+
+/* 表单区域 */
+.modal-body {
+  padding: 10px 40px;
+}
+
 .form-group {
-  position: relative;
-}
-
-.input-wrapper, .select-wrapper {
-  position: relative;
+  margin-bottom: 30px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   color: #a0d5ff;
   font-size: 1.1rem;
   letter-spacing: 0.8px;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   width: 100%;
-  padding: 16px 24px;
+  padding: 18px 25px;
   background: rgba(2, 10, 25, 0.9);
   border: none;
   border-radius: 12px;
@@ -199,12 +370,12 @@ const submit = async () => {
   font-size: 1.1rem;
   transition: all 0.3s ease;
   outline: none;
-  z-index: 2;
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   background: rgba(2, 10, 25, 1);
-  box-shadow: 0 0 20px rgba(100, 200, 250, 0.2);
+  box-shadow: 0 0 20px rgba(100, 200, 250, 0.3);
 }
 
 .input-glow {
@@ -249,45 +420,51 @@ const submit = async () => {
 /* 提交按钮 */
 .submit-btn {
   width: 100%;
-  padding: 18px 40px;
+  padding: 10px 40px;
+  margin-bottom: 20px;
   background: linear-gradient(45deg, #0066cc, #003366);
   border: none;
   border-radius: 30px;
   color: #fff;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.2rem;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.5px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  margin-top: 30px;
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .submit-btn:hover {
   background: linear-gradient(45deg, #0099ff, #0066cc);
   box-shadow: 0 0 30px rgba(0, 200, 255, 0.3);
+  transform: translateY(-2px);
 }
 
 .submit-btn:active {
-  transform: scale(0.96);
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(45deg, #22283a, #1a1f30);
+  box-shadow: none;
+  transform: none;
 }
 
 .loading-indicator {
-  display: inline-block;
   margin-left: 15px;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.submit-btn:hover .loading-indicator {
-  opacity: 1;
 }
 
 @keyframes spin {
@@ -297,7 +474,7 @@ const submit = async () => {
 /* 预览区域 */
 .galaxy-preview {
   margin-top: 40px;
-  padding: 25px;
+  padding: 10px 25px;
   background: rgba(5, 15, 35, 0.8);
   border: 1px dashed rgba(100, 200, 250, 0.1);
   border-radius: 15px;
@@ -324,6 +501,11 @@ const submit = async () => {
   padding: 18px;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 200, 255, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.preview-item:hover {
+  transform: translateY(-5px);
 }
 
 .item-label {
@@ -359,6 +541,7 @@ const submit = async () => {
   font-size: 0.95rem;
   font-weight: 500;
   text-transform: uppercase;
+  display: inline-block;
 }
 
 .public {
@@ -374,12 +557,23 @@ const submit = async () => {
 }
 
 /* 星流动画 */
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
 .star {
   position: absolute;
   background: #fff;
   border-radius: 50%;
   animation: twinkle var(--duration) infinite ease-in-out,
              drift var(--duration) linear infinite;
+  will-change: transform, opacity;
 }
 
 @keyframes drift {
@@ -394,16 +588,58 @@ const submit = async () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .creator-container {
-    padding: 25px;
+  .modal-content {
+    max-width: 90%;
+    padding: 0;
+    border-radius: 18px;
   }
 
-  .creator-title {
-    font-size: 1.8rem;
+  .modal-header {
+    padding: 20px 30px;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+  }
+
+  .modal-body {
+    padding: 30px;
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .close-btn::before,
+  .close-btn::after {
+    width: 25px;
+    height: 3px;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 15px 20px;
+    font-size: 1rem;
   }
 
   .preview-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .modal-body {
+    padding: 25px;
+  }
+
+  .submit-btn {
+    padding: 18px 30px;
+    font-size: 1.1rem;
   }
 }
 </style>

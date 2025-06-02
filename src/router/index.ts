@@ -60,6 +60,16 @@ const router = createRouter({
               component: () => import('@/views/UserProfileView.vue'),
             }
           ],
+        },
+        {
+          path: '/galaxy/:galaxyId',
+          children: [
+            {
+              path:'galaxyDetail',
+              name: 'GalaxyDetail',
+              component: () => import('@/views/GalaxyDetailView.vue'),
+            }
+          ]
         }
       ],
       meta: {

@@ -16,6 +16,7 @@ export interface UserBrief {
   mobile?:string
   createdAt?: string
   favorite_planet_id?: string
+  favorite_galaxy_id?: number
 }
 
 export interface TokenState {

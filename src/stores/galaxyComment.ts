@@ -16,39 +16,70 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
       current: 1,
       pageSize: 20,
       total: 0
-    }
+    },
+    currentComment: null as GalaxyCommentDto | null
   }),
   actions:{
     // 发布评论
     async publishComment(comment: {
+      parentId?: number
       content: string
-      galaxyId: number
+      galaxyId: string
       userId: number
+      replyToUserId?: number
     }) {
       try {
         const response = await service.post<ResponseMessage<GalaxyCommentDto>>(
           '/galaxy/comment/publish',
           comment
         )
+
         if (response.data.code === 200) {
-          // 更新本地列表（根据实际需求调整）
-          this.currentComments.unshift(response.data.data)
-          return response.data.data
+          const newComment = response.data.data;
+          console.log(newComment)
+          // 确保ID存在（双重验证）
+          if (!newComment.galaxyCommentId) {
+            console.error('后端返回空ID:', newComment);
+            throw new Error('评论创建失败：缺少评论ID');
+          }
+
+          // 递归更新树形结构
+          const addToTree = (comments: GalaxyCommentDto[]): boolean => {
+            for (const item of comments) {
+              // 如果是直接回复
+              if (item.galaxyCommentId === comment.parentId) {
+                if (!item.replies) item.replies = [];
+                item.replies.unshift(newComment); // 新评论置顶
+                return true;
+              }
+              // 递归查找嵌套回复
+              if (item.replies?.length && addToTree(item.replies)) {
+                return true;
+              }
+            }
+            return false;
+          };
+
+          // 添加到顶级或嵌套结构
+          if (!comment.parentId || !addToTree(this.currentComments)) {
+            this.currentComments.unshift(newComment); // 顶级评论置顶
+          }
+
+          return newComment;
         }
-        throw new Error(response.data.message)
+        throw new Error(response.data.message);
       } catch (error) {
-        throw new Error(`发布失败: ${error}`)
+        throw new Error(`发布失败: ${error}`);
       }
     },
      // 获取评论列表
      async fetchComments(params: CommentListRequest) {
       try {
         const { galaxyId, page = 1, size = 20, userId } = params
-        const response = await service.get<ResponseMessage<GalaxyCommentDto[]>>(
+        const response = await service.post<ResponseMessage<GalaxyCommentDto[]>>(
           `/galaxy/comment/list/${galaxyId}`,
-          {
-            params: { page, size, userId }
-          }
+          null, // POST请求体为空
+          { params: { page, size, userId } } // 参数放在query string
         )
 
         if (response.data.code === 200) {
@@ -70,19 +101,23 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
     // 点赞/取消点赞
     async toggleLike(params: LikeOperation) {
       try {
-        const response = await service.post<ResponseMessage<boolean>>(
-          '/galaxy/comment/like',
-          null,
-          { params }
+        const response = await service.post(
+          `/galaxy/comment/like?userId=${params.userId}&commentId=${params.galaxyCommentId}`,
+          null // 请求体为空
         )
-
+        console.log("开始点赞")
         if (response.data.code === 200) {
           // 更新本地数据
-          const targetComment = this.findCommentById(params.commentId)
+          const targetComment = this.currentComment
           if (targetComment) {
-            targetComment.likes += response.data.data ? 1 : -1
-            targetComment.isLiked = response.data.data
+           if(response.data.data = "点赞成功"){
+            targetComment.likeCount += 1
+           }
+           if(response.data.data = "取消点赞"){
+            targetComment.likeCount -= 1
+           }
           }
+          console.log(response.data.data)
           return response.data.data
         }
         throw new Error(response.data.message)
@@ -95,16 +130,16 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
     async deleteComment(params: DeleteCommentParams) {
       try {
         const response = await service.delete<ResponseMessage<void>>(
-          `/galaxy/comment/delete/${params.commentId}`,
+          `/galaxy/comment/delete/${params.galaxyCommentId}`,
           { params: { userId: params.userId } }
         )
 
         if (response.data.code === 200) {
           // 从列表和缓存中移除
           this.currentComments = this.currentComments.filter(
-            c => c.commentId !== params.commentId
+            c => c.galaxyCommentId !== params.galaxyCommentId
           )
-          this.commentDetails.delete(params.commentId)
+          this.commentDetails.delete(params.galaxyCommentId)
           return true
         }
         throw new Error(response.data.message)
@@ -135,7 +170,7 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
     findCommentById(commentId: number): GalaxyCommentDto | undefined {
       const findInTree = (comments: GalaxyCommentDto[]): GalaxyCommentDto | undefined => {
         for (const comment of comments) {
-          if (comment.commentId === commentId) return comment
+          if (comment.galaxyCommentId === commentId) return comment
           if (comment.replies?.length) {
             const found = findInTree(comment.replies)
             if (found) return found

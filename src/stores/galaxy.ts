@@ -5,11 +5,16 @@ import type {
   ResponseMessage
 } from '@/types/galaxy'
 import service from '@/utils/request'
+import { useUserStore } from './user'
+
+const userStore = useUserStore()
+
 
 export const useGalaxyStore = defineStore('knowledgeGalaxy', {
   state: () => ({
     galaxies: [] as KnowledgeGalaxyDto[], // 星系列表
-    currentGalaxy: null as KnowledgeGalaxyDto | null // 当前查看的星系
+    currentGalaxy: null as KnowledgeGalaxyDto | null ,// 当前查看的星系
+    showCreator: false // 是否显示创建星系的对话框
   }),
 
   actions: {
@@ -27,17 +32,23 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
       }
     },
     // 创建星系
-    async createGalaxy(payload: KnowledgeGalaxyDto) {
+    async createGalaxy(data:{
+      userId: number
+      name: string
+      label: string
+      permission: 0 | 1 // 默认公开
+    }) {
       try {
 
         const response = await service.post<ResponseMessage<string>>(
           '/galaxy/create',
-          payload
+          data
         )
 
         if (response.data.code === 200) {
           // 创建成功后加入列表
-          this.galaxies.push({ ...payload, galaxyId: response.data.data })
+          this.galaxies.push({ ...data, galaxyId: response.data.data })
+          this.init()
           return response.data.data
         }
         throw new Error(response.data.message)
@@ -50,12 +61,12 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     async getGalaxyInfo(galaxyId:string) {
       try {
         const response = await service.get<ResponseMessage<KnowledgeGalaxyDto>>(
-          '/galaxy/galaxyinfo',
-          { params: { galaxyId: galaxyId } }
+          `/galaxy/${galaxyId}`
         )
 
         if (response.data.code === 200) {
           this.currentGalaxy = response.data.data
+          console.log('获取星系信息:', this.currentGalaxy)
           return this.currentGalaxy
         }
         throw new Error(response.data.message)
@@ -65,7 +76,6 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
       }
     },
 
-    // 更新星系信息
     // 更新星系信息
     async updateGalaxy(payload: KnowledgeGalaxyDto) {
       try {
@@ -161,6 +171,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     // 新增：更新星系名称
     async updateGalaxyName(galaxyId: string, newName: string) {
       try {
+        console.log("更新星系名称")
         const response = await service.put<ResponseMessage<void>>(
           '/galaxy/updateName',
           {}, // 空请求体
@@ -184,6 +195,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     // 新增：更新星系标签
     async updateGalaxyLabel(galaxyId: string, newLabel: string) {
       try {
+        console.log("更新标签")
         const response = await service.put<ResponseMessage<void>>(
           '/galaxy/updateLabel',
           {},
@@ -206,6 +218,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     // 新增：更新星系权限
     async updateGalaxyPermission(galaxyId: string, newPermission: 0 | 1) {
       try {
+        console.log("更新权限")
         const response = await service.put<ResponseMessage<void>>(
           '/galaxy/updatePermission',
           {},
@@ -234,6 +247,24 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
       return ['name', 'label', 'permission', 'inviteCode'].some(
         key => original[key] !== updated[key]
       )
-    }
+    },
+
+
+    async setFavorGalaxy(galaxyId: number){
+      try{
+        const res = await service.put<ResponseMessage<number>>(
+          '/user/setfavorplanet',
+          { galaxyId: galaxyId }
+        )
+        if(res.data.code === 200){
+          if (userStore.userInfo) {
+            userStore.userInfo.favorite_galaxy_id = res.data.data;
+          }
+          return res.data.data // 返回最喜欢星球id
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }
+    },
   }
 })

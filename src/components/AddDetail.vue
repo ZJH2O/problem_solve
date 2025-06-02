@@ -7,7 +7,7 @@
       <form @submit.prevent="handleSubmit">
         <div class="form-group">
           <label>星球名称</label>
-          <input v-model="formData.name" required>
+          <input v-model="formData.contentTitle" required>
         </div>
 
         <div class="form-group">
@@ -16,9 +16,9 @@
         </div>
 
         <div class="form-group">
-          <label>初始访问量</label>
+          <label>主题类型设置</label>
           <input
-            v-model.number="formData.visitors"
+            v-model.number="formData.themeId"
             type="number"
             min="0"
             required
@@ -42,22 +42,22 @@
 import { reactive } from 'vue';
 
 const emit = defineEmits<{
-  (e: 'submit', data: { name: string; description: string; visitors: number }): void;
+  (e: 'submit', data: { contentTitle: string; description: string; themeId:number }): void;
   (e: 'cancel'): void;
 }>();
 
 const formData = reactive({
-  name: '',
-  description: '',
-  visitors: 1000
+  contentTitle:'',
+  description:'',
+  themeId:0 //访问权限0表示私有，1表示公开
 });
 
 const handleSubmit = () => {
-  if (formData.name && formData.description && formData.visitors >= 0) {
+  if (formData.contentTitle && formData.description && formData.themeId >= 0) {
     emit('submit', {
-      name: formData.name,
+      contentTitle: formData.contentTitle,
       description: formData.description,
-      visitors: formData.visitors
+      themeId: formData.themeId
     });
   }
 };

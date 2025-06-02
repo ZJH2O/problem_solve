@@ -2,7 +2,9 @@ import { defineStore } from 'pinia';
 import type{ KnowledgePlanetDto } from '@/types/planet';
 import type { ResponseMessage } from '@/types/api';
 import service from '@/utils/request';
+import { useUserStore } from './user';
 
+const userStore = useUserStore()
 
 export const usePlanetStore = defineStore('planet', {
   state: () => ({
@@ -23,13 +25,19 @@ export const usePlanetStore = defineStore('planet', {
       }
     },
      // 创建星球
-    async createPlanet(payload: KnowledgePlanetDto) {
+    async createPlanet(payload: {
+      contentTitle: string,
+      userId:number
+      themeId:number
+      description:string
+    }) {
       try {
         const response = await service.post<ResponseMessage<string>>(
           '/planet/create',
           payload
         )
         if (response.data.code === 200) {
+          this.init()
           return response.data.data // 返回创建的星球ID
         }
         throw new Error(response.data.message || '创建失败')
@@ -39,11 +47,11 @@ export const usePlanetStore = defineStore('planet', {
     },
 
      // 获取星球信息
-     async getPlanetByTitle(title: string) {
+    async getPlanetDetail(planetId: string) {
       try {
         const response = await service.post<ResponseMessage<KnowledgePlanetDto>>(
           '/planet/planetinfo',
-          { title }
+          { planetId }
         )
         if (response.data.code === 200) {
           this.currentPlanet = response.data.data
@@ -89,5 +97,25 @@ export const usePlanetStore = defineStore('planet', {
         throw new Error(`请求失败: ${error}`)
       }
     },
+
+    async setFavorPlanet(planetId: string){
+      try{
+        const res = await service.put<ResponseMessage>(
+          '/user/setfavorplanet',
+          { palnetId: planetId }
+        )
+        if(res.data.code === 200){
+          if (userStore.userInfo) {
+            userStore.userInfo.favorite_planet_id = res.data.data;
+          }
+          return res.data.data // 返回最喜欢星球id
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }
+    },
+
+
+
   }
 });

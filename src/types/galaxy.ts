@@ -7,6 +7,7 @@ export interface KnowledgeGalaxyDto {
   permission?: 0 | 1
   inviteCode?: string
   planets?: string[] // 包含的星球ID
+  createTime?:string
 }
 
 // 星球操作参数
