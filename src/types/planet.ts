@@ -12,4 +12,5 @@ export interface KnowledgePlanetDto {
   createTime?:string
   displayX?:number
   displayY?:number
+  hue?:number
 }

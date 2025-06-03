@@ -13,6 +13,8 @@
         <div class="planet-title">{{ favoritePlanet.contentTitle }}</div>
         <div class="planet-badge">⭐ 最爱星球</div>
       </div>
+
+      <div class="futurism-halo" :style="haloStyle"></div>
     </div>
 
     <!-- 无最爱星球提示 -->
@@ -67,6 +69,8 @@ const planetStyle = (planet: KnowledgePlanetDto) => {
 
   const size = baseSize + visitorRatio * 100;
   const hue = visitorRatio * 120;
+  planet.hue = hue;
+  favoritePlanet.value = planet;
 
   const lightColor = `hsl(${hue}, 90%, 65%)`;
   const darkColor = `hsl(${hue}, 70%, 35%)`;
@@ -132,6 +136,26 @@ onMounted(async () => {
   await store.init();
   await loadFavoritePlanet();
 });
+
+
+// 未来主义光环样式
+// 修改后的光环样式计算
+const haloStyle = computed(() => {
+  if (!favoritePlanet.value) return {};
+
+  const pulse = (Math.sin(Date.now() / 1000) * 0.5 + 0.5) * 20;
+  const hue = favoritePlanet.value.hue || 180; // 从星球数据获取色相值
+
+  // 基于星球主色生成渐变光环
+  const primaryGlow = `hsla(${hue}, 100%, 70%, 0.7)`;
+  const secondaryGlow = `hsla(${hue + 30}, 100%, 50%, 0.5)`;
+
+  return {
+    'box-shadow': `0 0 ${15 + pulse}px ${primaryGlow},
+                   0 0 ${30 + pulse}px ${secondaryGlow}`
+  };
+});
+
 </script>
 
 <style scoped>
@@ -328,4 +352,31 @@ onMounted(async () => {
     font-size: 1rem;
   }
 }
+
+/* 未来主义光环 */
+.futurism-halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  animation: pulse 3s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+
 </style>

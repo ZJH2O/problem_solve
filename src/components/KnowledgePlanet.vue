@@ -177,6 +177,7 @@ onMounted(async () => {
 
 .search-bar {
   display: flex;
+  position: fixed;
   width: 100%;
   max-width: 600px;
   background: rgba(0, 0, 0, 0.7);
