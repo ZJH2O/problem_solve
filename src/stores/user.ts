@@ -7,11 +7,11 @@ import type { LoginResponse, ResponseMessage } from '@/types/api'
 export const useUserStore = defineStore('user', {
   state: (): UserState & TokenState => ({
     isLoggedIn: !!localStorage.getItem('jwt_token'),
-    userInfo: null,
+    userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
     loading: false,
     error: null,
-    token: null,
-    tokenExpireAt: 0
+    token: localStorage.getItem('jwt_token'), // 直接初始化
+    tokenExpireAt: Number(localStorage.getItem('tokenExpireAt') || 0) // 添加过期时间存储
   }),
   getters: {
     currentUser: (state): UserBrief | null => {
@@ -26,7 +26,15 @@ export const useUserStore = defineStore('user', {
     }
   },
   actions: {
+    checkTokenExpiration() {
+      if (this.tokenExpireAt && Date.now() > this.tokenExpireAt * 1000) {
+        this.logout();
+        return false;
+      }
+      return true;
+    },
     async init() {
+      if (!this.checkTokenExpiration()) return false;
       this.token = localStorage.getItem('jwt_token');
       this.isLoggedIn = !!this.token;
       if (this.token) {
@@ -90,6 +98,7 @@ export const useUserStore = defineStore('user', {
       try {
         const res = await service.get<ResponseMessage<UserBrief>>('/user/userinfo')
         this.userInfo = res.data.data
+        localStorage.setItem('userInfo', JSON.stringify(this.userInfo)); // 新增持久化
         this.isLoggedIn = true
         console.log('用户信息获取成功:', this.userInfo)
         return true
@@ -106,6 +115,7 @@ export const useUserStore = defineStore('user', {
       try{
         const res = await service.put<ResponseMessage>('/user/update',userData)
         if (res.data.code === 200) {
+
           alert('用户信息更新成功')
           this.logout()
           return true

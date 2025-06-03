@@ -5,9 +5,11 @@ export interface KnowledgePlanetDto {
   creatorId: string
   themeId: number
   coverUrl?: string
-  visibility?: string
+  visibility?: 0 | 1
   description?: string
   visitCount?:number
   status?:number
   createTime?:string
+  displayX?:number
+  displayY?:number
 }

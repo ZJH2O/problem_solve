@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="handleLogout">Logout</button>
+    <HomePlanet />
   </div>
 </template>
 
@@ -8,6 +8,7 @@
 import { useUserStore } from '@/stores/user'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import HomePlanet from '@/components/home/HomePlanet.vue'
 const router = useRouter()
 const userStore = useUserStore()
 onMounted(async () => {

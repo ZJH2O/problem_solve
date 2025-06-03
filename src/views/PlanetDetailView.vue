@@ -16,19 +16,34 @@ import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePlanetStore } from '@/stores/planetStore';
 import PlanetDetail from '@/components/PlanetDetail.vue';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
 const store = usePlanetStore();
-
+const userStore = useUserStore();
 // 获取星球数据
 const planet = computed(() => {
+  console.log(store.currentPlanet)
   return store.currentPlanet
 });
 
-// 访问量统计
 onMounted(() => {
-
+  // 从路由参数获取星球ID
+  const planetId = route.params.id as string;
+  if (planetId) {
+    fetchPlanet(planetId);
+  }
 });
+
+async function fetchPlanet(planetId: string) {
+  try {
+    await store.VisitPlanet(planetId);
+    await userStore.init()
+    console.log('当前用户:', userStore.userInfo)
+  } catch (error) {
+    throw new Error(`${error}`)
+  }
+}
 </script>
 
 <style scoped>

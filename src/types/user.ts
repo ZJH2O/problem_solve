@@ -15,7 +15,7 @@ export interface UserBrief {
   createdPlanets?: string[]
   mobile?:string
   createdAt?: string
-  favorite_planet_id?: string
+  favoritePlanetId?: string
   favorite_galaxy_id?: number
 }
 

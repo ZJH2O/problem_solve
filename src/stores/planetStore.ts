@@ -9,7 +9,10 @@ const userStore = useUserStore()
 export const usePlanetStore = defineStore('planet', {
   state: () => ({
     planets: [] as KnowledgePlanetDto[],
-    currentPlanet: null as KnowledgePlanetDto | null
+    currentPlanet: null as KnowledgePlanetDto | null,
+    favoritePlanet: null as KnowledgePlanetDto | null,
+    minVisitors: 0,
+    maxVisitors: 0
   }),
   actions:{
     async init(){
@@ -17,11 +20,30 @@ export const usePlanetStore = defineStore('planet', {
         const res = await service.get<ResponseMessage<KnowledgePlanetDto[]>>('/user/loadingplanets')
         if (res.data.code === 200) {
           this.planets = res.data.data || [];
+          this.calculateVisitorRange(); // 新增:初始化时计算访客数量范围
           return true;
         }
         return false
       }catch (error) {
         console.error('初始化星球列表失败:', error);
+      }
+    },
+    // 新增方法：计算访客数量范围
+    calculateVisitorRange() {
+      if (this.planets.length === 0) {
+        this.minVisitors = 0;
+        this.maxVisitors = 0;
+        return;
+      }
+
+      const visitorCounts = this.planets.map(p => p.visitCount || 0);
+      this.minVisitors = Math.min(...visitorCounts);
+      this.maxVisitors = Math.max(...visitorCounts);
+
+      // 处理特殊情况
+      if (this.minVisitors === this.maxVisitors) {
+        this.minVisitors = 0;
+        this.maxVisitors = Math.max(this.maxVisitors, 1);
       }
     },
      // 创建星球
@@ -38,6 +60,7 @@ export const usePlanetStore = defineStore('planet', {
         )
         if (response.data.code === 200) {
           await this.init()
+          alert("创建星期成功")
           return response.data.data // 返回创建的星球ID
         }
         throw new Error(response.data.message || '创建失败')
@@ -69,6 +92,7 @@ export const usePlanetStore = defineStore('planet', {
         )
         if(res.data.code === 200){
           this.currentPlanet = res.data.data
+          this.calculateVisitorRange();
           return res.data.data
         }
       }catch(error){
@@ -132,15 +156,29 @@ export const usePlanetStore = defineStore('planet', {
 
     async setFavorPlanet(planetId: string){
       try{
-        const res = await service.put<ResponseMessage>(
+        const res = await service.put<ResponseMessage<string>>(
           '/user/setfavorplanet',
-          { planetId }
-        )
+          null,
+          { params: { planetId } }  // 使用params传递参数
+        );
         if(res.data.code === 200){
           if (userStore.userInfo) {
-            userStore.userInfo.favorite_planet_id = res.data.data;
+            userStore.userInfo.favoritePlanetId = res.data.data;
           }
           return res.data.data // 返回最喜欢星球id
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }
+    },
+
+    async loadingFavorPlanet(){
+      try{
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto>>(
+          '/user/loadingfavorplanet'
+        )
+        if(res.data.code === 200){
+          return res.data.data
         }
       }catch(error){
         throw new Error(`请求失败: ${error}`)

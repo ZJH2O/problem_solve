@@ -33,7 +33,7 @@
             >
           </label>
         </div>
-
+        <div class="scroll-container">
         <div class="planet-list">
           <div
             v-for="planet in planets"
@@ -54,6 +54,7 @@
             </div>
           </div>
         </div>
+      </div>
       </div>
     </transition>
     <div class="AddDetail">
@@ -79,6 +80,7 @@ const showAddDialog = ref(false);
 const userStore = useUserStore()
 const planets = computed(() => store.planets);
 onMounted(() => {
+  userStore.init()
   // ✅ 在组件上下文中验证 Store 可用性
   console.log('[Debug] Store methods:', {
     addPlanet: store.createPlanet,
@@ -94,7 +96,9 @@ const handleAddSubmit = (data: {
   description: string;
   themeId: number
 }) => {
-  userStore.init()
+  if(!userStore.userInfo?.userId){
+    alert("请先登录")
+  }
   store.createPlanet({
     ...data,
     userId: userStore.userInfo?.userId??-1,
@@ -186,6 +190,7 @@ const handleFileImport = async (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: hidden; /* 新增 */
 }
 
 .panel-header {
@@ -225,8 +230,9 @@ const handleFileImport = async (e: Event) => {
 
 .planet-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding-right: 10px;
+  min-height: 0; /* 关键修复 */
 }
 
 .planet-item {
