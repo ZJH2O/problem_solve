@@ -10,8 +10,8 @@ export const useUserStore = defineStore('user', {
     userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
     loading: false,
     error: null,
-    token: localStorage.getItem('jwt_token'), // 直接初始化
-    tokenExpireAt: Number(localStorage.getItem('tokenExpireAt') || 0) // 添加过期时间存储
+    token: null, // 直接初始化
+    tokenExpireAt: 0
   }),
   getters: {
     currentUser: (state): UserBrief | null => {
@@ -26,15 +26,7 @@ export const useUserStore = defineStore('user', {
     }
   },
   actions: {
-    checkTokenExpiration() {
-      if (this.tokenExpireAt && Date.now() > this.tokenExpireAt * 1000) {
-        this.logout();
-        return false;
-      }
-      return true;
-    },
     async init() {
-      if (!this.checkTokenExpiration()) return false;
       this.token = localStorage.getItem('jwt_token');
       this.isLoggedIn = !!this.token;
       if (this.token) {
@@ -80,7 +72,7 @@ export const useUserStore = defineStore('user', {
         if (res.data.code === 200) {
           const token:string = res.data.data
           console.log('登录成功,token:', token)
-          localStorage.setItem('jwt_token',token)
+          localStorage.setItem('jwt_token',token);
           const res1 = await this.init() // 获取用户信息
           if(res1) {
             return true
