@@ -26,6 +26,7 @@ import NavBar from '@/components/NavBar.vue'
     #0a0f1f 0%,   // 顶部更深的蓝黑色
     #050814 100%  // 底部接近纯黑的深蓝
   );
+  z-index: -2;
   .nav-container {
     flex-shrink: 0;
     position: sticky;
@@ -49,29 +50,28 @@ import NavBar from '@/components/NavBar.vue'
       height: 100%;
       background-image:
         // 冷色调星星（蓝紫色系）
-        radial-gradient(circle at 15% 25%, rgba(125, 122, 255, 0.15) 0.8px, transparent 1.5px),
-        radial-gradient(circle at 70% 60%, rgba(138, 43, 226, 0.12) 1px, transparent 2px),
+        radial-gradient(circle at 15% 25%, rgba(124, 122, 255, 0.249) 0.8px, transparent 1.5px),
+        radial-gradient(circle at 70% 60%, rgba(137, 43, 226, 0.292) 1px, transparent 2px),
         // 暖色调点缀（金色流星）
-        radial-gradient(circle at 85% 10%, rgba(255, 215, 0, 0.1) 1.5px, transparent 2px),
+        radial-gradient(circle at 85% 10%, rgba(255, 217, 0, 0.32) 1.5px, transparent 2px),
         // 星云效果（紫色雾状）
-        radial-gradient(circle at 50% 50%, rgba(75, 0, 130, 0.05) 30px, transparent 100px);
+        radial-gradient(circle at 50% 50%, rgba(76, 0, 130, 0.128) 30px, transparent 100px);
 
-      background-size:
-        120px 120px,  // 小星星
-        250px 250px,  // 中星星
-        400px 400px,  // 大星星
-        100% 100%;    // 星云
-      pointer-events: none;
-      // 添加发光效果
-  filter:
-    brightness(1.1)     // 整体亮度提升10%
-    contrast(1.2);       // 对比度提升20%
+        background-size:
+          120px 120px,  // 小星星
+          250px 250px,  // 中星星
+          400px 400px,  // 大星星
+          100% 100%;    // 星云
+        pointer-events: none;
+        // 添加发光效果
+        filter:
+          brightness(1.1)     // 整体亮度提升10%
+          contrast(1.2);       // 对比度提升20%
 
-  // 增强闪烁动画
-  animation:
-    starfield 120s linear infinite,
-    twinkle 3s ease-in-out infinite alternate;  // 缩短周期增强闪烁感
-
+        // 增强闪烁动画
+        animation:
+          starfield 120s linear infinite,
+          twinkle 3s ease-in-out infinite alternate;  // 缩短周期增强闪烁感
     }
   }
 

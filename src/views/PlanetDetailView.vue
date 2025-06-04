@@ -15,7 +15,7 @@
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePlanetStore } from '@/stores/planetStore';
-import PlanetDetail from '@/components/PlanetDetail.vue';
+import PlanetDetail from '@/components/planet/PlanetDetail.vue';
 import { useUserStore } from '@/stores/user';
 
 const route = useRoute();

@@ -33,27 +33,28 @@
             >
           </label>
         </div>
-
+        <div class="scroll-container">
         <div class="planet-list">
           <div
             v-for="planet in planets"
-            :key="planet.id"
+            :key="planet.planetId"
             class="planet-item"
           >
             <div class="planet-info">
-              <span class="name">{{ planet.name }}</span>
-              <span class="visitors">👥 {{ planet.visitors }}</span>
+              <span class="name">{{ planet.contentTitle }}</span>
+              <!-- <span class="visitors">👥 {{ planet. }}</span> -->
             </div>
             <div class="planet-actions">
               <button
                 class="action-btn delete"
-                @click="deletePlanet(planet.id)"
+                @click="deletePlanet(planet.planetId)"
               >
                 删除
               </button>
             </div>
           </div>
         </div>
+      </div>
       </div>
     </transition>
     <div class="AddDetail">
@@ -70,17 +71,19 @@
 import { ref, computed } from 'vue';
 import { onMounted } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
-import AddDetail from '@/components/AddDetail.vue';
-import type {Planet} from '@/types/planet';
+import AddDetail from '@/components/planet/AddDetail.vue';
+import { useUserStore } from '@/stores/user';
+import type { KnowledgePlanetDto } from '@/types/planet';
 const store = usePlanetStore();
 const showMenu = ref(false);
 const showAddDialog = ref(false);
-
+const userStore = useUserStore()
 const planets = computed(() => store.planets);
 onMounted(() => {
+  userStore.init()
   // ✅ 在组件上下文中验证 Store 可用性
   console.log('[Debug] Store methods:', {
-    addPlanet: store.addPlanet,
+    addPlanet: store.createPlanet,
     deletePlanet: store.deletePlanet
   });
 });
@@ -89,29 +92,23 @@ const toggleMenu = () => {
 };
 
 const handleAddSubmit = (data: {
-  name: string;
+  contentTitle: string;
   description: string;
-  visitors: number
+  themeId: number
 }) => {
-  store.addPlanet({
-    name: data.name,
-    description: data.description,
-    visitors: data.visitors
+  if(!userStore.userInfo?.userId){
+    alert("请先登录")
+  }
+  store.createPlanet({
+    ...data,
+    userId: userStore.userInfo?.userId??-1,
   });
   showAddDialog.value = false;
 };
 
-const addSamplePlanet = () => {
-  store.addPlanet({
-    name: `新星球 ${planets.value.length + 1}`,
-    description: '新建的星球描述',
-    visitors: Math.floor(Math.random() * 5000),
-  });
-};
-
-const deletePlanet = (id: number|string) => {
+const deletePlanet = (planetId:string) => {
   if (confirm('确定要删除这个星球吗？')) {
-    store.deletePlanet(id);
+    store.deletePlanet(planetId);
   }
 };
 
@@ -135,7 +132,7 @@ const handleFileImport = async (e: Event) => {
       reader.onload = (e) => {
         const result = e.target?.result;
         if (typeof result === 'string') {
-          const data: Planet[] = JSON.parse(result);
+          const data: KnowledgePlanetDto[] = JSON.parse(result);
           store.planets = data;
         }
       };
@@ -193,6 +190,7 @@ const handleFileImport = async (e: Event) => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: hidden; /* 新增 */
 }
 
 .panel-header {
@@ -232,8 +230,9 @@ const handleFileImport = async (e: Event) => {
 
 .planet-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding-right: 10px;
+  min-height: 0; /* 关键修复 */
 }
 
 .planet-item {
