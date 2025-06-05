@@ -253,6 +253,9 @@ export const useUserStore = defineStore('user', {
       }finally {
         this.loading = false
       }
+    },
+    consumeFuel() {
+      this.currentFule-- // 通过action修改
     }
   }
 })

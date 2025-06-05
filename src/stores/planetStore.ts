@@ -14,6 +14,7 @@ export const usePlanetStore = defineStore('planet', {
     searchResultPlanet: [] as KnowledgePlanetDto[],
     hotPlanets: [] as KnowledgePlanetDto[],
     currentRandomPlanet: null as KnowledgePlanetDto | null,
+    currentSelectPlanet: null as KnowledgePlanetDto | null,
     minVisitors: 0,
     maxVisitors: 0
   }),

@@ -59,7 +59,17 @@ const router = useRouter();
 const store = usePlanetStore();
 // 搜索相关状态
 const searchQuery = ref('');
-const filteredPlanets = ref<KnowledgePlanetDto[]>([]);
+const filteredPlanets = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return planets.value;
+  }
+
+  const query = searchQuery.value.toLowerCase();
+  return planets.value.filter(planet =>
+    planet.contentTitle.toLowerCase().includes(query) ||
+    (planet.description && planet.description.toLowerCase().includes(query))
+  );
+});
 
 
 interface TooltipData {
@@ -72,22 +82,22 @@ interface TooltipData {
 
 // 搜索处理函数
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) {
-    filteredPlanets.value = [...planets.value];
-    return;
-  }
+  // if (!searchQuery.value.trim()) {
+  //   filteredPlanets.value = [...planets.value];
+  //   return;
+  // }
 
-  const query = searchQuery.value.toLowerCase();
-  filteredPlanets.value = planets.value.filter(planet =>
-    planet.contentTitle.toLowerCase().includes(query) ||
-    (planet.description && planet.description.toLowerCase().includes(query))
-  );
+  // const query = searchQuery.value.toLowerCase();
+  // filteredPlanets.value = planets.value.filter(planet =>
+  //   planet.contentTitle.toLowerCase().includes(query) ||
+  //   (planet.description && planet.description.toLowerCase().includes(query))
+  // );
 };
 
 // 重置搜索
 const resetSearch = () => {
   searchQuery.value = '';
-  filteredPlanets.value = [...planets.value];
+  // filteredPlanets.value = [...planets.value];
 };
 
 
@@ -154,7 +164,7 @@ const navigateToPlanet = (planet:KnowledgePlanetDto) => {
 
 onMounted(async () => {
   await store.init();
-  filteredPlanets.value = [...planets.value];
+  // filteredPlanets.value = [...planets.value];
 });
 </script>
 
@@ -164,7 +174,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  margin-top: -100px;
+  margin-top: -50px;
 }
 /* 搜索栏样式 */
 .search-container {
@@ -176,7 +186,7 @@ onMounted(async () => {
 
 .search-bar {
   display: flex;
-  position: fixed;
+  position: relative;
   width: 100%;
   max-width: 600px;
   background: rgba(0, 0, 0, 0.7);

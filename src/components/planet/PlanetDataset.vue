@@ -91,7 +91,7 @@ const toggleMenu = () => {
   showMenu.value = !showMenu.value;
 };
 
-const handleAddSubmit = (data: {
+const handleAddSubmit = async(data: {
   contentTitle: string;
   description: string;
   themeId: number
@@ -99,10 +99,12 @@ const handleAddSubmit = (data: {
   if(!userStore.userInfo?.userId){
     alert("请先登录")
   }
-  store.createPlanet({
+  userStore.currentFule += 3
+  await store.createPlanet({
     ...data,
     userId: userStore.userInfo?.userId??-1,
   });
+
   showAddDialog.value = false;
 };
 
