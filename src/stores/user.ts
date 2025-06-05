@@ -1,17 +1,19 @@
 import { defineStore } from 'pinia'
-import type { TokenState, UserBrief, UserState } from '@/types/user'
+import type { Reward, TokenState, UserBrief, UserState } from '@/types/user'
 import service from '@/utils/request'
 import type { LoginResponse, ResponseMessage } from '@/types/api'
 
 
 export const useUserStore = defineStore('user', {
-  state: (): UserState & TokenState => ({
+  state: () => ({
     isLoggedIn: !!localStorage.getItem('jwt_token'),
     userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
     loading: false,
     error: null,
     token: null, // 直接初始化
-    tokenExpireAt: 0
+    tokenExpireAt: 0,
+    currentFule:0,
+    currentDust:0,
   }),
   getters: {
     currentUser: (state): UserBrief | null => {
@@ -32,6 +34,7 @@ export const useUserStore = defineStore('user', {
       if (this.token) {
         try {
           await this.fetchUserInfo(); // 自动获取用户信息
+          await this.GetRewardValue()
           return true;
         } catch (error) {
           console.log('获取用户信息失败:', error);
@@ -90,7 +93,6 @@ export const useUserStore = defineStore('user', {
       try {
         const res = await service.get<ResponseMessage<UserBrief>>('/user/userinfo')
         this.userInfo = res.data.data
-        localStorage.setItem('userInfo', JSON.stringify(this.userInfo)); // 新增持久化
         this.isLoggedIn = true
         console.log('用户信息获取成功:', this.userInfo)
         return true
@@ -236,5 +238,21 @@ export const useUserStore = defineStore('user', {
     clearError() {
       this.error = null
     },
+    async GetRewardValue(){
+      this.loading = true
+      try{
+        const res = await service.get<ResponseMessage<Reward>>('/reward/info')
+        if(res.data.code === 200){
+          if(this.userInfo) this.userInfo.reword = res.data.data
+          this.currentFule = res.data.data.fuelValue || 0
+          this.currentDust = res.data.data.knowledgeDust || 0
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }finally {
+        this.loading = false
+      }
+    }
   }
 })

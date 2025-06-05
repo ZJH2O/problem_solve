@@ -57,13 +57,15 @@ export const usePlanetStore = defineStore('planet', {
       description:string
     }) {
       try {
-        const response = await service.post<ResponseMessage<string>>(
+        const response = await service.post<ResponseMessage<KnowledgePlanetDto>>(
           '/planet/create',
           payload
         )
         if (response.data.code === 200) {
           await this.init()
-          alert("创建星期成功")
+          this.planets.push(response.data.data)
+          console.log(response.data.data)
+          alert("创建星球成功")
           return response.data.data // 返回创建的星球ID
         }
         throw new Error(response.data.message || '创建失败')

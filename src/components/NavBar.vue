@@ -22,6 +22,26 @@
 
      <!-- 右侧功能区 -->
      <div class="user-actions">
+
+      <div class="reward-items">
+        <div class="reward-item">
+          <svg class="reward-icon" viewBox="0 0 24 24">
+            <path d="M17 5.33C17 3.5 15.5 2 13.67 2H10.33C8.5 2 7 3.5 7 5.33V6H5C3.9 6 3 6.9 3 8V15C3 16.1 3.9 17 5 17H7V18.67C7 20.5 8.5 22 10.33 22H13.67C15.5 22 17 20.5 17 18.67V17H19C20.1 17 21 16.1 21 15V8C21 6.9 20.1 6 19 6H17V5.33ZM9 6H15V5.33C15 4.6 14.4 4 13.67 4H10.33C9.6 4 9 4.6 9 5.33V6ZM5 8H19V10H15V11H9V10H5V8ZM9 18.67C9 19.4 9.6 20 10.33 20H13.67C14.4 20 15 19.4 15 18.67V17H9V18.67ZM19 12V15H5V12H9V13H15V12H19Z"/>
+          </svg>
+          <span class="reward-value">{{ fuelValue }}</span>
+          <span class="reward-label">推进燃料</span>
+        </div>
+
+        <div class="reward-item">
+          <svg class="reward-icon" viewBox="0 0 24 24">
+            <path d="M12,3L2,12L5,12L5,21L19,21L19,12L22,12L12,3M12,7.7C14.1,7.7 15.8,9.4 15.8,11.5C15.8,13.6 14.1,15.3 12,15.3C9.9,15.3 8.2,13.6 8.2,11.5C8.2,9.4 9.9,7.7 12,7.7M7,18V16H17V18H7M10.5,13.7L9.3,12.5L12,9.8L14.7,12.5L13.5,13.7L12,12.2L10.5,13.7Z"/>
+          </svg>
+          <span class="reward-value">{{ knowledgeDust }}</span>
+          <span class="reward-label">知识星云</span>
+        </div>
+      </div>
+
+
       <div class="user-menu-wrapper" @mouseenter="showUserMenu = true" @mouseleave="showUserMenu = false">
         <button class="action-btn nebula-btn">
           <svg class="user-icon" viewBox="0 0 24 24">
@@ -57,7 +77,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { computed, ref } from 'vue'
+// 获取用户奖励信息
+const userStore = useUserStore()
+const fuelValue = computed(() => userStore.currentFule || 0)
+const knowledgeDust = computed(() => userStore.currentDust || 0)
 
 interface NavItem {
   name: string
@@ -269,4 +294,68 @@ $star-yellow: #FFD700;
   from { background-position: 0 0; }
   to { background-position: 600px 600px; }
 }
+
+$cosmic-primary: #6C5B7B;
+$stardust-purple: #C06C84;
+$nebula-pink: #F67280;
+$space-black: #2A2A3C;
+$star-yellow: #FFD700;
+$fuel-orange: #FF9800;
+$dust-blue: #03A9F4;
+// 新增奖励信息样式
+.reward-items {
+      display: flex;
+      gap: 1.8rem;
+      margin-right: 0.8rem;
+
+      .reward-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        min-width: 65px;
+
+        .reward-icon {
+          width: 28px;
+          height: 28px;
+          margin-bottom: 4px;
+        }
+
+        .fuel-icon {
+          fill: $fuel-orange;
+        }
+
+        .dust-icon {
+          fill: $dust-blue;
+        }
+
+        .reward-value {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: $star-yellow;
+          text-shadow: 0 0 6px rgba($star-yellow, 0.7);
+          margin-bottom: 2px;
+        }
+
+        .reward-label {
+          font-size: 0.7rem;
+          color: rgba(white, 0.8);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          white-space: nowrap;
+        }
+
+        // 悬浮动画效果
+        &:hover {
+          .reward-icon {
+            animation: pulse 0.8s infinite alternate;
+          }
+
+          .reward-value {
+            color: lighten($star-yellow, 15%);
+            text-shadow: 0 0 8px rgba(lighten($star-yellow, 15%), 0.9);
+          }
+        }
+      }
+    }
 </style>

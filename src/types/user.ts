@@ -17,9 +17,15 @@ export interface UserBrief {
   createdAt?: string
   favoritePlanetId?: string
   favorite_galaxy_id?: number
+  reward?: Reward
 }
 
 export interface TokenState {
   token: string | null
   tokenExpireAt: number
+}
+
+export interface Reward {
+  fuelValue?:number
+  knowledgeDust?:number
 }
