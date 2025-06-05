@@ -78,6 +78,11 @@ const router = createRouter({
               path:'galaxyDetail',
               name: 'GalaxyDetail',
               component: () => import('@/views/GalaxyDetailView.vue'),
+            },
+            {
+              path: 'galaxyPlanets',
+              name:'GalaxyPlanets',
+              component: () => import('@/views/GalaxyPlanetsView.vue')
             }
           ]
         },

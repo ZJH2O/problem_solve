@@ -60,12 +60,14 @@ import CommentList from './CommentList.vue'
 import CommentPublisher from './CommentPublisher.vue'
 import GalaxyEditor from '@/components/galaxy/GalaxyEditor.vue'
 import type { KnowledgeGalaxyDto } from '@/types/galaxy'
+import router from '@/router'
 
 const route = useRoute()
 const userStore = useUserStore()
 const galaxyStore = useGalaxyStore()
 const currentGalaxy = ref<KnowledgeGalaxyDto | null>(null) // 本地存储当前星系数据
-  const galaxyUpdateKey = ref(0) // 用于强制刷新视图的key
+const galaxyUpdateKey = ref(0) // 用于强制刷新视图的key
+const galaxy = computed(() => galaxyStore.currentGalaxy)
 // 响应式数据
 const showEditor = ref(false)
 const galaxyId = computed(() =>
@@ -90,7 +92,7 @@ const openEditor = () => {
   showEditor.value = true
 }
 
-// 处理星系更新事件
+
 // 处理星系更新事件
 const handleGalaxyUpdated = (updatedData: Partial<KnowledgeGalaxyDto>) => {
   // 更新本地数据
@@ -111,6 +113,18 @@ const handleGalaxyUpdated = (updatedData: Partial<KnowledgeGalaxyDto>) => {
 
   console.log('星系信息已更新', updatedData)
 }
+
+const enterGalaxy = () =>{
+      console.log('探索星系:', galaxy.value?.name);
+      router.push({
+        name: 'GalaxyPlanets', // 使用路由配置中的命名路由
+        params: {
+          galaxyId: galaxy.value?.galaxyId // 传递星系ID作为动态参数
+        }
+      });
+      // 这里可以导航到星系详情页
+}
+
 </script>
 
 <style scoped>

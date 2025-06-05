@@ -6,6 +6,7 @@ import type {
 } from '@/types/galaxy'
 import service from '@/utils/request'
 import { useUserStore } from './user'
+import type { KnowledgePlanetDto } from '@/types/planet'
 
 const userStore = useUserStore()
 
@@ -14,7 +15,8 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
   state: () => ({
     galaxies: [] as KnowledgeGalaxyDto[], // 星系列表
     currentGalaxy: null as KnowledgeGalaxyDto | null ,// 当前查看的星系
-    showCreator: false // 是否显示创建星系的对话框
+    showCreator: false ,// 是否显示创建星系的对话框
+    galaxyPlanets: [] as KnowledgePlanetDto[] //星系里面的星球
   }),
 
   actions: {
@@ -30,6 +32,9 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
       }catch (error) {
         console.error('初始化星系列表失败:', error)
       }
+    },
+    async initPlanets(){
+
     },
     // 创建星系
     async createGalaxy(data:{
@@ -125,47 +130,41 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     },
 
     // 添加星球到星系
-    async addPlanetToGalaxy(params: GalaxyPlanetOperation) {
-      try {
-        const response = await service.post<ResponseMessage<void>>(
+    async addPlanetToGalaxy(params: {
+      galaxyId:number
+      planetId:string
+    }) {
+      try{
+        const res = await service.post<ResponseMessage<KnowledgePlanetDto>>(
           '/galaxy/addplanet',
-          null,
-          { params }
+          params
         )
-
-        if (response.data.code === 200) {
-          // 更新本地数据
-          const galaxy = this.galaxies.find(g => g.galaxyId === params.galaxyId)
-          if (galaxy && !galaxy.planets?.includes(params.planetId)) {
-            galaxy.planets = [...(galaxy.planets || []), params.planetId]
-          }
-          return true
+        if(res.data.code === 200){
+          this.galaxyPlanets.push(res.data.data)
+          console.log("已经添加星球")
+          return res.data.data
         }
-        throw new Error(response.data.message)
-      } catch (error) {
+      }catch (error) {
         throw new Error(`添加失败: ${error}`)
       }
+
     },
-
     // 从星系移除星球
-    async removePlanetFromGalaxy(params: GalaxyPlanetOperation) {
-      try {
-        const response = await service.delete<ResponseMessage<void>>(
+    async removePlanetFromGalaxy(params: {
+      galaxyId:number
+      planetId:string
+    }) {
+      try{
+        const res = await service.post<ResponseMessage<string>>(
           '/galaxy/deleteplanet',
-          { params }
+          params
         )
-
-        if (response.data.code === 200) {
-          // 更新本地数据
-          const galaxy = this.galaxies.find(g => g.galaxyId === params.galaxyId)
-          if (galaxy) {
-            galaxy.planets = galaxy.planets?.filter(p => p !== params.planetId) || []
-          }
-          return true
+        if(res.data.code === 200){
+          console.log("已经删除星球")
+          return res.data.data
         }
-        throw new Error(response.data.message)
-      } catch (error) {
-        throw new Error(`移除失败: ${error}`)
+      }catch(error){
+        throw new Error(`删除失败: ${error}`)
       }
     },
     // 新增：更新星系名称
