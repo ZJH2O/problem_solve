@@ -37,11 +37,11 @@
             </router-link>
             <router-link to="/user/messages" class="menu-item">
               <i class="icon-message"></i>
-              好友管理
+              消息管理
             </router-link>
             <router-link to="/user/friends" class="menu-item">
               <i class="icon-message"></i>
-              消息管理
+              好友管理
             </router-link>
           </div>
         </transition>

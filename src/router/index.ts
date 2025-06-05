@@ -58,6 +58,16 @@ const router = createRouter({
               path: 'profile',
               name: 'UserProfile',
               component: () => import('@/views/UserProfileView.vue'),
+            },
+            {
+              path:'friends',
+              name:'UserFriends',
+              component :() => import('@/views/FriendView.vue'),
+            },
+            {
+              path:'messages',
+              name:'UserMessages',
+              component: () => import('@/views/MessagesView.vue')
             }
           ],
         },
