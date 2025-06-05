@@ -1,19 +1,13 @@
 <template>
   <div>
-    <button @click="handleLogout">Explore</button>
+    <SearchPlanet />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user'
-import { useRouter } from 'vue-router'
-const router = useRouter()
-const userStore = useUserStore()
 
-const handleLogout = async () => {
-  await userStore.logout()
-  router.push('/login')
-}
+import SearchPlanet from '@/components/explore/SearchPlanet.vue'
+
 </script>
 
 <style scoped lang="scss">

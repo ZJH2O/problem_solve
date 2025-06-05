@@ -39,7 +39,7 @@ async function fetchPlanet(planetId: string) {
   try {
     await store.VisitPlanet(planetId);
     await userStore.init()
-    console.log('当前用户:', userStore.userInfo)
+    // console.log('当前用户:', userStore.userInfo)
   } catch (error) {
     throw new Error(`${error}`)
   }

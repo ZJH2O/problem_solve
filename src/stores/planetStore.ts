@@ -11,6 +11,9 @@ export const usePlanetStore = defineStore('planet', {
     planets: [] as KnowledgePlanetDto[],
     currentPlanet: null as KnowledgePlanetDto | null,
     favoritePlanet: null as KnowledgePlanetDto | null,
+    searchResultPlanet: [] as KnowledgePlanetDto[],
+    hotPlanets: [] as KnowledgePlanetDto[],
+    currentRandomPlanet: null as KnowledgePlanetDto | null,
     minVisitors: 0,
     maxVisitors: 0
   }),
@@ -92,10 +95,12 @@ export const usePlanetStore = defineStore('planet', {
         )
         if(res.data.code === 200){
           this.currentPlanet = res.data.data
+          console.log("访问星球")
           this.calculateVisitorRange();
           return res.data.data
         }
       }catch(error){
+        console.log("访问星球失败")
         throw new Error(`请求失败: ${error}`)
       }
     },
@@ -237,7 +242,7 @@ export const usePlanetStore = defineStore('planet', {
 
       // 更新可见性 (0-私有，1-公开)
       async updateVisibility(planetId: string, visibility: 0 | 1) {
-        return this.updatePlanetAttribute('updateVisibility', { planetId, visibility });
+        return this.updatePlanetAttribute('updatevisibility', { planetId, visibility });
       },
 
       // 更新简介
@@ -301,6 +306,73 @@ export const usePlanetStore = defineStore('planet', {
           throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
         }
       },
+        /**
+     * 新增：定向飞行到指定星球（根据星球名搜索）
+     * @param planetName 要搜索的星球名称
+     * @returns 星球详细信息
+     */
+    async searchPlanet(planetName: string): Promise<KnowledgePlanetDto[]> {
+      try {
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto[]>>(
+          '/planet/access/search',
+          { params: { planetName } }  // 使用params传递查询参数
+        );
+
+        if (res.data.code === 200) {
+          console.log("已经搜索星球")
+          this.searchResultPlanet = res.data.data; // 存储搜索结果
+          return res.data.data;
+        }
+
+        throw new Error(res.data.message || '星球搜索失败');
+      } catch (error) {
+        this.searchResultPlanet = []; // 清空搜索结果
+        console.log("定向飞行失败")
+        throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      }
+    },
+
+    /**
+     * 新增：随机访问星球
+     * @returns 随机星球详细信息
+     */
+    async randomAccessPlanet(): Promise<KnowledgePlanetDto> {
+      try {
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto>>(
+          '/planet/access/randomAccess'
+        );
+
+        if (res.data.code === 200) {
+          this.currentRandomPlanet = {...res.data.data}; // 设置为当前访问的星球
+          console.log( this.currentRandomPlanet)
+          return res.data.data;
+        }
+
+        throw new Error(res.data.message || '随机访问失败');
+      } catch (error) {
+        this.currentPlanet = null; // 清空当前星球
+        console.log("随机访问失败")
+        throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      }
+    },
+    async loadingHotPlanets(): Promise<KnowledgePlanetDto[]> {
+      try {
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto[]>>(
+          '/planet/access/loadinghotplanets'
+        );
+
+        if (res.data.code === 200) {
+          this.hotPlanets = res.data.data; // 设置为当前访问的星球
+          return res.data.data;
+        }
+
+        throw new Error(res.data.message || '加载热门星球失败');
+      } catch (error) {
+        this.currentPlanet = null; // 清空当前星球
+        console.log("加载热门星球失败")
+        throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      }
+    },
 
   }
 });

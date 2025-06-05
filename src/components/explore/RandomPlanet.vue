@@ -1,28 +1,31 @@
 <template>
-  <div class="home-planet-container">
-    <!-- 最喜爱星球展示 -->
+  <div class="random-planet-container">
+    <!-- 随机星球展示 -->
     <div
-      v-if="favoritePlanet"
-      class="favorite-planet"
-      :style="planetStyle(favoritePlanet)"
-      @click="navigateToPlanet(favoritePlanet)"
-      @mouseenter="showTooltip(favoritePlanet, $event)"
+      v-if="randomPlanet"
+      class="random-planet"
+      :style="planetStyle(randomPlanet)"
+      @click="selectPlanet(randomPlanet)"
+      @mouseenter="showTooltip(randomPlanet, $event)"
       @mouseleave="hideTooltip"
     >
       <div class="planet-content">
-        <div class="planet-title">{{ favoritePlanet.contentTitle }}</div>
-        <div class="planet-badge">⭐ 最爱星球</div>
+        <div class="planet-title">{{ randomPlanet.contentTitle }}</div>
+        <div class="planet-badge">✨ 随机星球</div>
       </div>
 
-      <div class="futurism-halo" :style="haloStyle"></div>
     </div>
 
-    <!-- 无最爱星球提示 -->
-    <div v-else class="no-favorite">
-      <h3>您还未设置最爱星球</h3>
-      <p>探索知识宇宙，找到属于您的专属星球</p>
-        <button class="discover-btn" @click="navigateToDiscover">探索星球</button>
-        <button class="create-btn" @click="navigateToCreate">创建星球</button>
+    <!-- 加载状态 -->
+    <div v-else-if="loading" class="loading">
+      <div class="spinner"></div>
+      正在探索随机星球...
+    </div>
+
+    <!-- 错误状态 -->
+    <div v-else-if="error" class="error">
+      <i class="icon-error"></i>
+      <p>星球探索失败: {{ error }}</p>
     </div>
 
     <!-- 星球信息提示 -->
@@ -43,12 +46,19 @@ import { ref, computed, onMounted } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
 import { useRouter } from 'vue-router';
 import type { KnowledgePlanetDto } from '@/types/planet';
+import { watch } from 'vue'
+
 
 const router = useRouter();
 const store = usePlanetStore();
 
-// 最喜爱星球数据
-const favoritePlanet = ref<KnowledgePlanetDto | null>(null);
+const props = defineProps<{
+  planet: KnowledgePlanetDto; // 父组件传递的星球列表
+}>();
+// 随机星球数据
+const randomPlanet = computed(() => props.planet)
+const loading = ref(false);
+const error = ref<string | null>(null);
 const activeTooltip = ref<{
   contentTitle: string;
   description: string;
@@ -63,15 +73,13 @@ const minVisitors = computed(() => store.minVisitors);
 
 // 星球样式计算
 const planetStyle = (planet: KnowledgePlanetDto) => {
-  const baseSize = 400; // 基础大小
+  const baseSize = 300; // 随机星球的基础大小可以稍小一些
   const visitorRatio = maxVisitors.value === minVisitors.value
     ? 0.5
     : (planet.visitCount - minVisitors.value) / (maxVisitors.value - minVisitors.value);
 
   const size = baseSize + visitorRatio * 100;
   const hue = visitorRatio * 120;
-  planet.hue = hue;
-  favoritePlanet.value = planet;
 
   const lightColor = `hsl(${hue}, 90%, 65%)`;
   const darkColor = `hsl(${hue}, 70%, 35%)`;
@@ -110,69 +118,36 @@ const tooltipStyle = computed(() => ({
   top: `${activeTooltip.value?.y}px`
 }));
 
-// 导航到星球详情页
-const navigateToPlanet = (planet: KnowledgePlanetDto) => {
-  store.currentPlanet = planet;
+// 选择星球处理
+const selectPlanet = (planet: KnowledgePlanetDto) => {
+  // 路由跳转到星球详情页
   router.push(`/planets/${planet.planetId}`);
+
+  // 在store中设置当前星球
+  store.currentPlanet = planet;
+
+  // 调用访问星球的方法
+  store.VisitPlanet(planet.planetId);
 };
 
-// 导航到探索页面
-const navigateToDiscover = () => {
-  router.push('/explore');
-};
-
-const navigateToCreate = () => {
-  router.push('/knowledge');
-};
-// 加载最喜爱星球
-const loadFavoritePlanet = async () => {
-  try {
-    const planet = await store.loadingFavorPlanet();
-    if (planet) {
-      favoritePlanet.value = planet;
-    }
-  } catch (error) {
-    console.error('加载最爱星球失败:', error);
-  }
-};
-
-onMounted(async () => {
-  await store.init();
-  await loadFavoritePlanet();
-});
-
-
-// 未来主义光环样式
-// 修改后的光环样式计算
-const haloStyle = computed(() => {
-  if (!favoritePlanet.value) return {};
-
-  const pulse = (Math.sin(Date.now() / 1000) * 0.5 + 0.5) * 20;
-  const hue = favoritePlanet.value.hue || 180; // 从星球数据获取色相值
-
-  // 基于星球主色生成渐变光环
-  const primaryGlow = `hsla(${hue}, 100%, 70%, 0.7)`;
-  const secondaryGlow = `hsla(${hue + 30}, 100%, 50%, 0.5)`;
-
-  return {
-    'box-shadow': `0 0 ${15 + pulse}px ${primaryGlow},
-                   0 0 ${30 + pulse}px ${secondaryGlow}`
-  };
-});
+watch(() => props.planet, (newPlanet) => {
+  // 当planet变化时的处理逻辑
+  console.log('星球数据已更新', newPlanet)
+}, { deep: true }) // 深度监听对象内部变化
 
 </script>
 
 <style scoped>
-.home-planet-container {
+.random-planet-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: 300px;
   padding: 2rem;
   position: relative;
 }
 
-.favorite-planet {
+.random-planet {
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -219,7 +194,7 @@ const haloStyle = computed(() => {
   backdrop-filter: blur(5px);
 }
 
-.favorite-planet::after {
+.random-planet::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -234,7 +209,7 @@ const haloStyle = computed(() => {
   opacity: 0.7;
 }
 
-.favorite-planet:hover {
+.random-planet:hover {
   transform: scale(1.05);
   box-shadow:
     0 0 40px var(--planet-glow),
@@ -248,7 +223,7 @@ const haloStyle = computed(() => {
   50% { transform: translateY(-15px) rotate(2deg); }
 }
 
-.no-favorite {
+.loading, .error {
   text-align: center;
   padding: 2rem;
   background: rgba(0, 0, 0, 0.6);
@@ -257,42 +232,48 @@ const haloStyle = computed(() => {
   box-shadow: 0 0 20px rgba(0, 195, 255, 0.3);
   max-width: 500px;
   color: #b6f9ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.no-favorite h3 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #00eeff;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #00eeff;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
 }
 
-.no-favorite p {
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.no-favorite button {
-  padding: 10px 25px;
+.error .icon-error {
+  font-size: 48px;
+  color: #ff6b6b;
+  margin-bottom: 15px;
+}
+
+.error p {
+  margin-bottom: 15px;
+}
+
+.retry-btn {
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #00c9ff, #00eeff);
   border: none;
   border-radius: 30px;
   color: #0a0f2b;
   font-weight: bold;
-  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 0 15px rgba(0, 201, 255, 0.5);
-
 }
 
-.discover-btn{
-  background: linear-gradient(45deg, #00c9ff, #00eeff);
-}
-
-.create-btn{
-  margin-left: 2rem;
-  background: linear-gradient(45deg, #00ff48, #00ffcc);
-}
-
-.no-favorite button:hover {
+.retry-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 0 25px rgba(0, 201, 255, 0.8);
 }
@@ -332,14 +313,15 @@ const haloStyle = computed(() => {
   font-size: 1.2rem;
 }
 
+
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .home-planet-container {
-    min-height: 300px;
+  .random-planet-container {
+    min-height: 200px;
     padding: 1rem;
   }
 
-  .favorite-planet {
+  .random-planet {
     width: 180px !important;
     height: 180px !important;
   }
@@ -352,43 +334,5 @@ const haloStyle = computed(() => {
     font-size: 0.8em;
     padding: 4px 12px;
   }
-
-  .no-favorite {
-    padding: 1.5rem;
-  }
-
-  .no-favorite h3 {
-    font-size: 1.5rem;
-  }
-
-  .no-favorite p {
-    font-size: 1rem;
-  }
 }
-
-/* 未来主义光环 */
-.futurism-halo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 110%;
-  height: 110%;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  animation: pulse 3s infinite ease-in-out;
-  pointer-events: none;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-}
-
 </style>
