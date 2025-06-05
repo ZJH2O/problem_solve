@@ -1,4 +1,5 @@
-import { Client, Frame, IMessage } from '@stomp/stompjs'
+import { Client } from '@stomp/stompjs'
+import type { IFrame as Frame, IMessage } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { useNotificationStore } from '@/stores/notification'
 import { useUserStore } from '@/stores/user'
