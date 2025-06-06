@@ -55,6 +55,16 @@ const store = usePlanetStore();
 const props = defineProps<{
   planet: KnowledgePlanetDto; // 父组件传递的星球列表
 }>();
+
+// 配置选项
+const PLANET_CONFIG = {
+  baseSize: 250,      // 基础大小（减小到250px）
+  maxSize: 350,       // 最大尺寸限制（350px）
+  sizeRange: 80,      // 尺寸变化范围（从80px减小）
+  baseFontSize: 14,   // 基础字体大小
+  maxFontSize: 18     // 最大字体大小
+};
+
 // 随机星球数据
 const randomPlanet = computed(() => props.planet)
 const loading = ref(false);
@@ -73,17 +83,27 @@ const minVisitors = computed(() => store.minVisitors);
 
 // 星球样式计算
 const planetStyle = (planet: KnowledgePlanetDto) => {
-  const baseSize = 300; // 随机星球的基础大小可以稍小一些
+  // 计算访客比例（0-1之间）
   const visitorRatio = maxVisitors.value === minVisitors.value
     ? 0.5
     : (planet.visitCount - minVisitors.value) / (maxVisitors.value - minVisitors.value);
 
-  const size = baseSize + visitorRatio * 100;
+  // 计算尺寸，确保不超过最大值
+  const calculatedSize = PLANET_CONFIG.baseSize + visitorRatio * PLANET_CONFIG.sizeRange;
+  const size = Math.min(calculatedSize, PLANET_CONFIG.maxSize);
+
+  // 计算颜色（基于访客比例）
   const hue = visitorRatio * 120;
 
   const lightColor = `hsl(${hue}, 90%, 65%)`;
   const darkColor = `hsl(${hue}, 70%, 35%)`;
   const glowColor = `hsla(${hue}, 100%, 50%, 0.5)`;
+
+  // 计算字体大小，也要限制最大值
+  const fontSize = Math.min(
+    Math.max(PLANET_CONFIG.baseFontSize, PLANET_CONFIG.baseFontSize + 4 * visitorRatio),
+    PLANET_CONFIG.maxFontSize
+  );
 
   return {
     width: `${size}px`,
@@ -92,7 +112,7 @@ const planetStyle = (planet: KnowledgePlanetDto) => {
     '--planet-dark': darkColor,
     '--planet-glow': glowColor,
     background: `radial-gradient(circle at 30% 30%, ${lightColor}, ${darkColor})`,
-    fontSize: `${Math.max(16, 18 * visitorRatio)}px`
+    fontSize: `${fontSize}px`
   };
 };
 
@@ -321,6 +341,7 @@ watch(() => props.planet, (newPlanet) => {
     padding: 1rem;
   }
 
+  /* 移动端使用固定尺寸 */
   .random-planet {
     width: 180px !important;
     height: 180px !important;
