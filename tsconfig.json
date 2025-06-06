@@ -9,6 +9,9 @@
     }
   ],
   "compilerOptions": {
-    "types": ["echarts"]
+    "types": ["echarts"],
+        "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+  }}
   }
-}
