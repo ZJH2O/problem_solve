@@ -102,10 +102,10 @@ export const useCommentStore = defineStore('comment', {
           // 更新本地数据
           const targetComment = this.currentComment
           if (targetComment) {
-           if(response.data.data = "点赞成功"){
+           if(response.data.data === "点赞成功"){
             targetComment.likeCount += 1
            }
-           if(response.data.data = "取消点赞"){
+           if(response.data.data === "取消点赞"){
             targetComment.likeCount -= 1
            }
           }
