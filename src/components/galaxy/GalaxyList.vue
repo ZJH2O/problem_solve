@@ -89,10 +89,10 @@ import type { KnowledgeGalaxyDto } from '@/types/galaxy';
 import GalaxyCreator from './GalaxyCreator.vue';
 import router from '@/router';
 const galaxyStore = useGalaxyStore();
-    const searchTerm = ref('');
+const searchTerm = ref('');
 
-    // 初始化星系数据
-    onMounted(async () => {
+// 初始化星系数据
+onMounted(async () => {
       await galaxyStore.init();
     });
 

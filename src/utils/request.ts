@@ -1,3 +1,4 @@
+import { useUserStore } from '@/stores/user'
 import axios, { type AxiosInstance } from 'axios'
 
 const BASE_URL = 'http://localhost:8081'

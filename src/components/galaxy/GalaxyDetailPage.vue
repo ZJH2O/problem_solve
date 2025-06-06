@@ -114,7 +114,7 @@ const handleGalaxyUpdated = (updatedData: Partial<KnowledgeGalaxyDto>) => {
   console.log('星系信息已更新', updatedData)
 }
 
-const enterGalaxy = () =>{
+const enterGalaxy = async() =>{
       console.log('探索星系:', galaxy.value?.name);
       router.push({
         name: 'GalaxyPlanets', // 使用路由配置中的命名路由
@@ -122,6 +122,8 @@ const enterGalaxy = () =>{
           galaxyId: galaxy.value?.galaxyId // 传递星系ID作为动态参数
         }
       });
+      galaxyStore.currentGalaxy = galaxy.value
+      await galaxyStore.initPlanets(galaxy.value?.galaxyId)
       // 这里可以导航到星系详情页
 }
 
