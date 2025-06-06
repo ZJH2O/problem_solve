@@ -50,7 +50,6 @@ const router = createRouter({
           component: () => import('@/views/PlanetDetailView.vue'),
           props: true
         },
-
         {
           path:'/user',
           name:'user',
@@ -63,18 +62,18 @@ const router = createRouter({
             {
               path:'friends',
               name:'UserFriends',
-              component :() => import('@/views/FriendView.vue'),
+              component: () => import('@/views/FriendView.vue'),
+            },
+            {
+              path: 'chat/:friendId',  // Changed: Make chat a separate route with friendId parameter
+              name: 'FriendChat',
+              component: () => import('@/views/ChatView.vue'),
+              props: true  // This allows friendId to be passed as a prop
             },
             {
               path:'messages',
               name:'UserMessages',
               component: () => import('@/views/MessagesView.vue')
-            },
-            {
-              path: 'chat/:friendId',
-              name: 'FriendChat',
-              component: () => import('@/views/ChatView.vue'),
-              props:true
             }
           ],
         },
@@ -113,8 +112,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
-   // 1. 检查是否需要认证
-   if (to.meta.requiresAuth) {
+  // 1. 检查是否需要认证
+  if (to.meta.requiresAuth) {
     if (userStore.isLoggedIn) {
       next()
     } else {

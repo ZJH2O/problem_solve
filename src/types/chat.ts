@@ -28,7 +28,6 @@ export enum MessageType {
 
 // 聊天会话
 export interface ChatSession {
-  senderUserId: number
   friendId: number
   friendUserId: number
   friendName: string
@@ -37,6 +36,7 @@ export interface ChatSession {
   lastMessageTime?: string
   unreadCount: number
   isOnline?: boolean
+  senderUserId?: number  // Made optional since it's only needed when sending messages
 }
 
 // 发送消息的请求参数

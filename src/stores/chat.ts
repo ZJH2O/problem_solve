@@ -110,7 +110,7 @@ export const useChatStore = defineStore('chat', {
         this.isSending = true
 
         const messageDto: PrivateMessageDto = {
-          senderId: this.currentChat.senderUserId,
+          senderId: this.currentChat.senderUserId || 0, // 使用当前用户ID
           receiverId: this.currentChat.friendUserId,
           content: content.trim(),
           messageType,

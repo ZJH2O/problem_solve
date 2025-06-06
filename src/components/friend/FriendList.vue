@@ -85,13 +85,12 @@ const formatTime = (time: string) => {
 
 }
 
-const startChat = async(friend: FriendDto) => {
-  // 这里可以添加跳转到聊天页面的逻辑
-  const friendId = friend.friendId
-  console.log(friend.friendId)
-  router.push(`/user/chat/${friendId}`)
-
-  console.log('开始聊天:', friend.friendNickname)
+const startChat = (friend: FriendDto) => {
+  // 跳转到聊天页面，传递好友ID
+  router.push({
+    name: 'FriendChat',
+    params: { friendId: friend.friendUserId.toString() }
+  })
 }
 
 const removeFriend = async (friend: FriendDto) => {
