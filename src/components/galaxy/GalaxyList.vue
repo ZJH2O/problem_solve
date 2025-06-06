@@ -13,7 +13,7 @@
 
       <div class="controls">
         <div class="search-container">
-          <el-icon><Search /></el-icon>
+
           <input
             v-model="searchTerm"
             type="text"

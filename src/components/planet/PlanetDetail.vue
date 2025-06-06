@@ -35,6 +35,8 @@
 
     <!-- 主要内容区 -->
     <main class="detail-content">
+       <!-- 左边：描述区 -->
+       <div class="left-section">
       <section class="description">
         <h2>星球描述</h2>
         <p>{{ planet.description }}</p>
@@ -86,9 +88,9 @@
               id="new-cdetail"
               v-model="CDetailForm.newDetail"
               rows="3"
-              maxlength="200"
+              maxlength="1000"
             ></textarea>
-            <p class="char-count">{{ CDetailForm.newDetail?.length }}/200</p>
+            <p class="char-count">{{ CDetailForm.newDetail?.length }}/1000</p>
           </div>
 
           <div class="form-actions">
@@ -103,48 +105,14 @@
           </div>
         </div>
       </div>
-      <!-- 作者留言 -->
-      <section class="author-messages">
-        <h2>作者留言</h2>
-        <div class="message-list">
-          <div
-            v-for="message in planet.details?.authorMessages"
-            :key="message.id"
-            class="message-card"
-          >
-            <div class="author-info">
-              <img
-                :src="message.author.avatarUrl"
-                :alt="message.author.username"
-                class="avatar"
-              >
-              <span class="username">{{ message.author.username }}</span>
-            </div>
-            <p class="content">{{ message.content }}</p>
-            <div class="attachments" v-if="message.attachments">
-              <a
-                v-for="att in message.attachments"
-                :key="att.url"
-                :href="att.url"
-                class="attachment"
-              >
-                {{ att.type }}附件
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      </div>
       <!-- 读者评论 -->
+
+      <!-- 右边：评论区 -->
+      <div class="right-section">
       <section class="comments-section">
         <h2>读者评论（{{ commentCount }}）</h2>
-        <div class="comment-form">
-          <textarea
-            v-model="newComment"
-            placeholder="写下你的评论..."
-          ></textarea>
-          <button @click="submitComment">提交评论</button>
-        </div>
+
         <div class="comment-list">
           <div
             v-for="comment in planet.contentDetail?.readerComments"
@@ -168,7 +136,17 @@
             </div>
           </div>
         </div>
+
+        <!-- 评论输入框，固定在底部 -->
+        <div class="comment-form">
+          <textarea
+            v-model="newComment"
+            placeholder="写下你的评论..."
+          ></textarea>
+          <button @click="submitComment">提交评论</button>
+        </div>
       </section>
+      </div>
     </main>
   </div>
 </template>
@@ -682,5 +660,90 @@ input:focus, textarea:focus {
   border-radius: 50%;
   border-top-color: #fff;
   animation: spin 1s linear infinite;
+}
+
+/* 修改主要内容区为Flex布局 */
+.detail-content {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* 左边区域 */
+.left-section {
+  flex: 5; /* 占据70%宽度 */
+}
+
+/* 右边区域 */
+.right-section {
+  flex: 5; /* 占据30%宽度 */
+  position: relative;
+  height: 100%;
+}
+
+/* 评论区设置 */
+.comments-section {
+  display: flex;
+  flex-direction: column;
+  height: 80vh; /* 设置固定高度 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  background: rgba(16, 22, 58, 0.5);
+}
+
+/* 评论列表，设置滚动 */
+.comment-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding-right: 5px; /* 防止滚动条遮挡内容 */
+}
+
+/* 评论输入框固定在底部 */
+.comment-form {
+  position: sticky;
+  bottom: 0;
+  background: rgba(16, 22, 58, 0.9);
+  padding: 1rem 0;
+  border-top: 1px solid rgba(0, 238, 255, 0.3);
+}
+
+.comment-form textarea {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #00eeff;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.comment-form button {
+  background: linear-gradient(45deg, #00c9ff, #00eeff);
+  color: #0a0f2b;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.comment-form button:hover {
+  background: linear-gradient(45deg, #00b3e6, #00d1ff);
+  box-shadow: 0 0 10px rgba(0, 201, 255, 0.5);
+}
+
+/* 响应式设计：在小屏幕下改为上下布局 */
+@media (max-width: 768px) {
+  .detail-content {
+    flex-direction: column;
+  }
+
+  .left-section, .right-section {
+    width: 100%;
+  }
 }
 </style>
