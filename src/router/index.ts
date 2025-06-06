@@ -64,18 +64,17 @@ const router = createRouter({
               path:'friends',
               name:'UserFriends',
               component :() => import('@/views/FriendView.vue'),
-              children: [
-                {
-                  path: 'chat/:friendId',
-                  name: 'FriendChat',
-                  component: () => import('@/views/ChatView.vue'),
-                  props: true
-                }]
             },
             {
               path:'messages',
               name:'UserMessages',
               component: () => import('@/views/MessagesView.vue')
+            },
+            {
+              path: 'chat/:friendId',
+              name: 'FriendChat',
+              component: () => import('@/views/ChatView.vue'),
+              props:true
             }
           ],
         },

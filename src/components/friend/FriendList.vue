@@ -64,13 +64,14 @@
 </template>
 
 <script setup lang="ts">
+import router from '@/router'
 import { useFriendStore } from '@/stores/friend'
 import type { FriendDto } from '@/types/friend'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+
 
 const friendStore = useFriendStore()
-const router = useRouter()
+
 
 const formatTime = (time: string) => {
   const date = new Date(time)
@@ -84,9 +85,11 @@ const formatTime = (time: string) => {
 
 }
 
-const startChat = (friend: FriendDto) => {
+const startChat = async(friend: FriendDto) => {
   // 这里可以添加跳转到聊天页面的逻辑
-  router.push({ name: 'FriendChat',params:{ friendId: friend.friendUserId } })
+  const friendId = friend.friendId
+  console.log(friend.friendId)
+  router.push(`/user/chat/${friendId}`)
 
   console.log('开始聊天:', friend.friendNickname)
 }

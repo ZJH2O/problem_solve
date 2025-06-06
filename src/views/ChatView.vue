@@ -511,8 +511,9 @@ onMounted(async () => {
     chatStore.fetchUnreadCount()
   }, 30000) // 每30秒更新一次
 
-  onUnmounted(() => {
+  onUnmounted(async() => {
     clearInterval(unreadInterval)
+    await userStore.init()
   })
 })
 
