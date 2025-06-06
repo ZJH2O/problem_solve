@@ -18,20 +18,9 @@
         </div>
 
         <div class="data-operations">
-          <button class="operation-btn" @click="showAddDialog = true">
-            ➕ 添加新星球
+          <button @click="showPlanetManager = true" class="trigger-button">
+            <i class="icon-planet"></i> 管理星系星球
           </button>
-          <button class="operation-btn" @click="exportData">
-            📤 导出数据
-          </button>
-          <label class="operation-btn">
-            📥 导入数据
-            <input
-              type="file"
-              hidden
-              @change="handleFileImport"
-            >
-          </label>
         </div>
         <div class="scroll-container">
         <div class="planet-list">
@@ -49,17 +38,21 @@
                 class="action-btn delete"
                 @click="deletePlanet(planet.planetId)"
               >
-                删除
+                移出星系
               </button>
             </div>
           </div>
         </div>
       </div>
+
       </div>
     </transition>
-    <div class="AddDetail">
-
-    </div>
+  </div>
+  <div>
+<!-- 模态框组件 -->
+    <PlanetRelationManager
+    v-model:visible="showPlanetManager"
+    />
   </div>
 </template>
 
@@ -67,16 +60,18 @@
 import { ref, computed } from 'vue';
 import { onMounted } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
-import AddDetail from '@/components/planet/AddDetail.vue';
 import { useUserStore } from '@/stores/user';
 import type { KnowledgePlanetDto } from '@/types/planet';
 import { useGalaxyStore } from '@/stores/galaxy';
+import PlanetRelationManager from './PlanetRelationManager.vue';
+
 const store = usePlanetStore();
 const galaxyStore = useGalaxyStore()
 const showMenu = ref(false);
-const showAddDialog = ref(false);
 const userStore = useUserStore()
+const showPlanetManager = ref(false)
 const planets = computed(() => galaxyStore.galaxyPlanets);
+const galaxyId = computed(()=>galaxyStore.currentGalaxy?.galaxyId )
 onMounted(() => {
   userStore.init()
   // ✅ 在组件上下文中验证 Store 可用性
@@ -90,43 +85,21 @@ const toggleMenu = () => {
 };
 
 
-const deletePlanet = (planetId:string) => {
-  if (confirm('确定要删除这个星球吗？')) {
-    store.deletePlanet(planetId);
-  }
-};
 
-const exportData = () => {
-  const dataStr = JSON.stringify(planets.value);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'planets-data.json';
-  a.click();
-  URL.revokeObjectURL(url);
-};
+const deletePlanet = async (planet:KnowledgePlanetDto) => {
 
-const handleFileImport = async (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  if (input.files?.[0]) {
-    try {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          const data: KnowledgePlanetDto[] = JSON.parse(result);
-          store.planets = data;
-        }
-      };
-      reader.readAsText(file);
-    } catch (error) {
-      alert('文件导入失败，请检查文件格式');
-      console.error('File import error:', error);
-    }
+  try {
+    await galaxyStore.removePlanetFromGalaxy({
+      galaxyId: galaxyStore.currentGalaxy?.galaxyId || '-1',
+      planetId: planet.planetId || '-1'
+    })
+    alert('移除成功！')
+  } catch (error) {
+    alert(error instanceof Error ? error.message : '未知错误')
   }
-};
+}
+
+
 </script>
 
 <style scoped>

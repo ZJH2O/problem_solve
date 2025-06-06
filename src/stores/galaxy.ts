@@ -141,13 +141,13 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
 
     // 添加星球到星系
     async addPlanetToGalaxy(params: {
-      galaxyId:number
+      galaxyId:string
       planetId:string
     }) {
       try{
         const res = await service.post<ResponseMessage<KnowledgePlanetDto>>(
-          '/galaxy/addplanet',
-          params
+          `/galaxy/addplanet?galaxyId=${params.galaxyId}&planetId=${params.planetId}`,
+           null // 请求体留空
         )
         if(res.data.code === 200){
           this.galaxyPlanets.push(res.data.data)
@@ -161,13 +161,12 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     },
     // 从星系移除星球
     async removePlanetFromGalaxy(params: {
-      galaxyId:number
+      galaxyId:string
       planetId:string
     }) {
       try{
-        const res = await service.post<ResponseMessage<string>>(
-          '/galaxy/deleteplanet',
-          params
+        const res = await service.delete<ResponseMessage<string>>(
+          `/galaxy/deleteplanet?galaxyId=${params.galaxyId}&planetId=${params.planetId}`
         )
         if(res.data.code === 200){
           console.log("已经删除星球")
