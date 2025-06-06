@@ -11,6 +11,9 @@ export interface PlanetCommentDto {
   updateTime: string;
   replies?: PlanetCommentDto[];
   isLiked?: boolean
+  isExpanded?: boolean; // 新增展开状态
+  showDetail?: boolean; // 新增详情展示状态
+  replyToUserId?: number; // 新增回复目标用户ID
 }
 
 export interface CreateCommentPayload {
@@ -18,6 +21,7 @@ export interface CreateCommentPayload {
   userId: number;
   content: string;
   parentId?: number; // 可选，默认为0（顶级评论）
+  replyToUserId?:number
 }
 
 

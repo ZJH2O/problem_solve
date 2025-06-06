@@ -66,26 +66,28 @@ export const useCommentStore = defineStore('comment', {
       }
     },
 
-    // 获取评论详情
-    async getCommentDetail(commentId: number) {
-      try {
-        // 后端使用 @RequestBody，前端使用查询参数
-        const res = await service.get<ResponseMessage<PlanetCommentDto>>(
-          '/comment/commentinfo',
-          { params: { commentId } }
+    // 获取评论详情（优化）
+  async getCommentDetail(commentId: number) {
+    try {
+      const res = await service.get<ResponseMessage<PlanetCommentDto>>(
+        `/planet/comment/detail/${commentId}`
+      );
+
+      if (res.data.code === 200) {
+        // 更新本地评论
+        const index = this.currentPlanetComments.findIndex(
+          c => c.planetCommentId === commentId
         );
-
-        if (res.data.code === 200) {
-          this.currentComment = res.data.data;
-          return res.data.data;
+        if (index !== -1) {
+          this.currentPlanetComments[index] = res.data.data;
         }
-
-        throw new Error(res.data.message || '获取评论详情失败');
-      } catch (error) {
-        this.currentComment = null;
-        throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        return res.data.data;
       }
-    },
+      throw new Error(res.data.message || '获取评论详情失败');
+    } catch (error) {
+      throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  },
 
     // 点赞/取消点赞
     async toggleLike(params: {
@@ -201,12 +203,26 @@ export const useCommentStore = defineStore('comment', {
       }
     },
 
-    // 添加评论到当前星球（本地操作，不调用API）
-    addCommentLocally(comment: PlanetCommentDto) {
+    // 添加评论到当前星球（优化）
+  addCommentLocally(comment: PlanetCommentDto) {
+    // 如果是回复，找到父评论并添加
+    if (comment.parentId && comment.parentId !== 0) {
+      const parent = this.currentPlanetComments.find(
+        c => c.planetCommentId === comment.parentId
+      );
+      if (parent) {
+        if (!parent.replies) parent.replies = [];
+        parent.replies.push(comment);
+        parent.replies.sort((a, b) =>
+          new Date(a.createTime).getTime() - new Date(b.createTime).getTime()
+        );
+      }
+    } else {
+      // 顶级评论
       this.currentPlanetComments.push(comment);
-      this.totalComments += 1;
+    }
+    this.totalComments += 1;
     },
-
     // 移除本地评论（不调用API）
     removeCommentLocally(commentId: number) {
       this.currentPlanetComments = this.currentPlanetComments.filter(c => c.planetCommentId !== commentId);

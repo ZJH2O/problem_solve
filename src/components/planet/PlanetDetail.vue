@@ -661,7 +661,7 @@ input:focus, textarea:focus {
   padding: 40px;
   margin-bottom: 40px; /* 在星球档案下方增加40px间距 */
   border: 1px solid rgba(48, 161, 231, 0.406);
-  min-height: 30vh;
+  height: 30vh;
   border-radius: 1%;
 }
 
@@ -669,7 +669,7 @@ input:focus, textarea:focus {
   padding: 40px;
   margin-top: 40px; /* 在星际知识库上方增加40px间距 */
   border: 1px solid rgba(48, 161, 231, 0.406);
-  min-height: 66vh;
+  height: 66vh;
   border-radius: 1%;
 }
 
@@ -751,4 +751,29 @@ input:focus, textarea:focus {
 .custom-btn:active {
   transform: translateY(1px);
 }
+
+/* 添加滚动条样式 */
+.intro-grid,
+.knowledge-grid {
+  overflow-y: auto; /* 垂直滚动 */
+  max-height: calc(100% - 50px); /* 预留标题空间 */
+  padding-right: 5px; /* 避免滚动条遮挡内容 */
+  scrollbar-width: thin; /* Firefox支持 */
+  scrollbar-color: #00c8ff2c rgba(0, 201, 255, 0.1); /* Firefox滑块颜色 */
+}
+
+/* Webkit浏览器滚动条定制 */
+.intro-grid::-webkit-scrollbar,
+.knowledge-grid::-webkit-scrollbar {
+  width: 8px; /* 滚动条宽度 */
+}
+
+.intro-grid::-webkit-scrollbar-track,
+.knowledge-grid::-webkit-scrollbar-track {
+  border-radius: 4px; /* 圆角 */
+}
+
+
+
+
 </style>

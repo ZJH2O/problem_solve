@@ -14,7 +14,7 @@
     <div class="new-comment-form cosmic-form">
       <textarea
         v-model="newCommentContent"
-        placeholder="向宇宙广播你的想法..."
+        placeholder="留下你曾存在过的痕迹..."
         rows="3"
         class="cosmic-textarea"
       ></textarea>
@@ -33,7 +33,7 @@
     </div>
 
     <div v-else-if="topLevelComments.length === 0" class="no-comments">
-      <p>🌌 这片星域还没有足迹，成为第一个探险家吧！</p>
+      <p>🌌 这个星球上还没有足迹，成为第一个探险家吧！</p>
     </div>
     <div v-else class="scrollable-comments cosmic-scroll">
       <div class="comment-list">
@@ -65,6 +65,9 @@
               <button @click="toggleReplyForm(comment.planetCommentId)" class="reply-btn cosmic-button">
                 {{ activeReplyId === comment.planetCommentId ? '🛸 取消' : '📡 回复' }}
               </button>
+              <button @click="toggleCommentDetail(comment)" class="detail-btn cosmic-button">
+              📡 {{ comment.showDetail ? '隐藏详情' : '查看详情' }}
+              </button>
             </div>
           </div>
 
@@ -82,27 +85,31 @@
             </div>
           </div>
 
-          <!-- 回复列表 -->
-          <div v-if="getRepliesByCommentId(comment.planetCommentId).length > 0" class="replies cosmic-replies">
+          <!-- 直接回复列表（仅显示一层） -->
             <div
-              v-for="reply in getRepliesByCommentId(comment.planetCommentId)"
+              v-if="comment.replies && comment.replies.length && comment.showDetail > 0"
+              class="replies cosmic-replies"
+            >
+            <div
+              v-for="reply in comment.replies"
               :key="reply.planetCommentId"
               class="reply-item cosmic-response"
             >
-              <div class="reply-author">
-                <span class="username cosmic-username">👾 回应者#{{ reply.userId }}</span>
-              </div>
-              <div class="reply-content cosmic-text">
-                {{ reply.content }}
-              </div>
-              <div class="reply-meta">
-                <span class="timestamp cosmic-timestamp">{{ formatDateTime(reply.createTime) }}</span>
-                <button @click="toggleLike(reply)" class="like-btn-sm cosmic-reaction">
-                  🌠 {{ reply.likeCount || '脉冲' }}
-                </button>
-              </div>
+            <div class="reply-author">
+              <span class="username cosmic-username">👾 回应者#{{ reply.userId }}</span>
             </div>
-          </div>
+            <div class="reply-content cosmic-text">
+              {{ reply.content }}
+            </div>
+            <div class="reply-meta">
+              <span class="timestamp cosmic-timestamp">{{ formatDateTime(reply.createTime) }}</span>
+              <button @click="toggleLike(reply)" class="like-btn-sm cosmic-reaction">
+                🌠 {{ reply.likeCount || '脉冲' }}
+              </button>
+            </div>
+            </div>
+            </div>
+
         </div>
       </div>
     </div>
@@ -183,6 +190,12 @@ const toggleReplyForm = (commentId: number) => {
   } else {
     activeReplyId.value = commentId;
     replyContent.value = '';
+
+    // 自动展开回复区域
+    const comment = commentStore.currentPlanetComments.find(
+      c => c.planetCommentId === commentId
+    );
+    if (comment) comment.isExpanded = true;
   }
 };
 
@@ -198,14 +211,11 @@ const toggleLike = async (comment: PlanetCommentDto) => {
     console.error('无效评论ID:', comment.planetCommentId);
     return;
 };
-
   if (!userId.value) {
     alert('请先登录')
     return
   }
-
   commentStore.currentComment = comment
-
   commentStore.toggleLike({
     userId: userId.value,
     commentId: comment.planetCommentId
@@ -305,6 +315,16 @@ const injectHumorousComment = (content: string) => {
   }
   return content;
 };
+
+const toggleCommentDetail = async (comment: PlanetCommentDto) => {
+  if (!comment.showDetail) {
+    comment.showDetail = true
+  } else {
+    // 关闭详情
+    comment.showDetail = false;
+  }
+};
+
 </script>
 
 <style scoped lang="scss">
