@@ -2,10 +2,8 @@ import { defineStore } from 'pinia';
 import type {
   PlanetCommentDto,
   CreateCommentPayload,
-  UpdateLikeCountPayload,
   UpdateStatusPayload,
   DeleteCommentPayload,
-  CommentListResponse
 } from '@/types/comment';
 import type { ResponseMessage } from '@/types/api';
 import service from '@/utils/request';
@@ -23,7 +21,8 @@ export const useCommentStore = defineStore('comment', {
   getters: {
     // 获取顶级评论（无父级）
     topLevelComments: (state) => {
-      return state.currentPlanetComments
+      const comments = state.currentPlanetComments ?? [];
+      return comments
         .filter(comment => comment.parentId === 0)
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime());
     },
@@ -37,7 +36,7 @@ export const useCommentStore = defineStore('comment', {
 
     // 获取指定ID的评论
     getCommentById: (state) => (commentId: number) => {
-      return state.currentPlanetComments.find(comment => comment.commentId === commentId);
+      return state.currentPlanetComments.find(comment => comment.planetCommentId === commentId);
     }
   },
 
@@ -52,11 +51,12 @@ export const useCommentStore = defineStore('comment', {
         };
 
         const res = await service.post<ResponseMessage<number>>(
-          '/comment/create',
+          '/planet/comment/publish',
           finalPayload
         );
 
         if (res.data.code === 200) {
+
           return res.data.data; // 返回创建的评论ID
         }
 
@@ -87,26 +87,34 @@ export const useCommentStore = defineStore('comment', {
       }
     },
 
-    // 更新评论点赞数
-    async updateLikeCount(payload: UpdateLikeCountPayload) {
+    // 点赞/取消点赞
+    async toggleLike(params: {
+      userId:number
+      commentId:number
+    }) {
       try {
-        const res = await service.put<ResponseMessage<void>>(
-          '/comment/updateLikeCount',
-          payload
-        );
-
-        if (res.data.code === 200) {
-          // 更新本地状态
-          const commentIndex = this.currentPlanetComments.findIndex(c => c.commentId === payload.commentId);
-          if (commentIndex !== -1) {
-            this.currentPlanetComments[commentIndex].likeCount = payload.likeCount;
+        const response = await service.post(
+          `/planet/comment/like?userId=${params.userId}&commentId=${params.commentId}`,
+          null // 请求体为空
+        )
+        console.log("开始点赞")
+        if (response.data.code === 200) {
+          // 更新本地数据
+          const targetComment = this.currentComment
+          if (targetComment) {
+           if(response.data.data = "点赞成功"){
+            targetComment.likeCount += 1
+           }
+           if(response.data.data = "取消点赞"){
+            targetComment.likeCount -= 1
+           }
           }
-          return true;
+          console.log(response.data.data)
+          return response.data.data
         }
-
-        throw new Error(res.data.message || '更新点赞数失败');
+        throw new Error(response.data.message)
       } catch (error) {
-        throw new Error(`请求失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        throw new Error(`操作失败: ${error}`)
       }
     },
 
@@ -120,7 +128,7 @@ export const useCommentStore = defineStore('comment', {
 
         if (res.data.code === 200) {
           // 更新本地状态
-          const commentIndex = this.currentPlanetComments.findIndex(c => c.commentId === payload.commentId);
+          const commentIndex = this.currentPlanetComments.findIndex(c => c.planetCommentId === payload.commentId);
           if (commentIndex !== -1) {
             this.currentPlanetComments[commentIndex].status = payload.status;
           }
@@ -134,26 +142,23 @@ export const useCommentStore = defineStore('comment', {
     },
 
     // 获取星球下的所有评论（带分页）
-    async listCommentsByPlanet(planetId: string, page: number = 1, size: number = 10) {
+    async listCommentsByPlanet(planetId: string, page: number = 1, size: number = 10, userId?: number) {
       try {
-        const res = await service.get<ResponseMessage<CommentListResponse>>(
-          '/comment/listByPlanet',
+        const res = await service.post<ResponseMessage<PlanetCommentDto[]>>(
+          `planet/comment/list/${planetId}`,
+          null,
           {
             params: {
-              planetId,
               page,
-              size
+              size,
+              userId // 可选参数
             }
           }
         );
 
         if (res.data.code === 200) {
-          this.currentPlanetComments = res.data.data.list;
-          this.totalComments = res.data.data.total;
-          return {
-            list: res.data.data.list,
-            total: res.data.data.total
-          };
+          this.currentPlanetComments = res.data.data;
+          return res.data.data
         }
 
         throw new Error(res.data.message || '获取评论列表失败');
@@ -175,7 +180,7 @@ export const useCommentStore = defineStore('comment', {
         if (res.data.code === 200) {
           // 从本地状态中移除
           this.currentPlanetComments = this.currentPlanetComments.filter(
-            comment => comment.commentId !== payload.commentId
+            comment => comment.planetCommentId !== payload.commentId
           );
           return true;
         }
@@ -213,7 +218,7 @@ export const useCommentStore = defineStore('comment', {
 
     // 移除本地评论（不调用API）
     removeCommentLocally(commentId: number) {
-      this.currentPlanetComments = this.currentPlanetComments.filter(c => c.commentId !== commentId);
+      this.currentPlanetComments = this.currentPlanetComments.filter(c => c.planetCommentId !== commentId);
       this.totalComments -= 1;
     },
 
@@ -222,7 +227,7 @@ export const useCommentStore = defineStore('comment', {
       const tree: PlanetCommentDto[] = [];
 
       comments.filter(c => c.parentId === parentId).forEach(comment => {
-        const children = this.buildCommentTree(comments, comment.commentId);
+        const children = this.buildCommentTree(comments, comment.planetCommentId);
         if (children.length > 0) {
           comment.replies = children;
         }
@@ -239,7 +244,7 @@ export const useCommentStore = defineStore('comment', {
 
     // 点赞评论（客户端本地操作）
     likeCommentLocally(commentId: number) {
-      const comment = this.currentPlanetComments.find(c => c.commentId === commentId);
+      const comment = this.currentPlanetComments.find(c => c.planetCommentId === commentId);
       if (comment) {
         comment.likeCount += 1;
       }
@@ -247,7 +252,7 @@ export const useCommentStore = defineStore('comment', {
 
     // 取消点赞（客户端本地操作）
     unlikeCommentLocally(commentId: number) {
-      const comment = this.currentPlanetComments.find(c => c.commentId === commentId);
+      const comment = this.currentPlanetComments.find(c => c.planetCommentId === commentId);
       if (comment && comment.likeCount > 0) {
         comment.likeCount -= 1;
       }

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { SystemAdmin } from '@/types'
+import type { SystemAdmin } from '@/types/admin'
 import apiClient from '@/utils/axios' // 使用新的 Axios 实例
 import { useUserStore } from './user'
 

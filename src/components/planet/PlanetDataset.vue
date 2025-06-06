@@ -21,17 +21,6 @@
           <button class="operation-btn" @click="showAddDialog = true">
             ➕ 添加新星球
           </button>
-          <button class="operation-btn" @click="exportData">
-            📤 导出数据
-          </button>
-          <label class="operation-btn">
-            📥 导入数据
-            <input
-              type="file"
-              hidden
-              @change="handleFileImport"
-            >
-          </label>
         </div>
         <div class="scroll-container">
         <div class="planet-list">
@@ -114,37 +103,6 @@ const deletePlanet = (planetId:string) => {
   }
 };
 
-const exportData = () => {
-  const dataStr = JSON.stringify(planets.value);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'planets-data.json';
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-const handleFileImport = async (e: Event) => {
-  const input = e.target as HTMLInputElement;
-  if (input.files?.[0]) {
-    try {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          const data: KnowledgePlanetDto[] = JSON.parse(result);
-          store.planets = data;
-        }
-      };
-      reader.readAsText(file);
-    } catch (error) {
-      alert('文件导入失败，请检查文件格式');
-      console.error('File import error:', error);
-    }
-  }
-};
 </script>
 
 <style scoped>
