@@ -101,28 +101,49 @@ class WebSocketService {
     console.error('WebSocket错误:', frame)
   }
 
-  // 处理收到的通知
-  private handleNotification(message: IMessage) {
-    try {
-      const data = JSON.parse(message.body)
-      console.log('收到实时通知:', data)
+// 在处理消息的部分添加私信支持
+private handleNotification(message: IMessage) {
+  try {
+    const data = JSON.parse(message.body)
+    console.log('收到实时消息:', data)
 
+    if (data.type === 'notification' && data.data) {
       const notificationStore = useNotificationStore()
+      notificationStore.addRealtimeNotification(data.data)
+      this.playNotificationSound()
+      this.showBrowserNotification(data.data)
+    } else if (data.type === 'private_message' && data.data) {
+      // 处理私信消息
+      const chatStore = useChatStore()
+      chatStore.receiveMessage(data.data)
 
-      if (data.type === 'notification' && data.data) {
-        // 添加到通知列表
-        notificationStore.addRealtimeNotification(data.data)
-
-        // 播放提示音（可选）
-        this.playNotificationSound()
-
-        // 显示浏览器通知（如果有权限）
-        this.showBrowserNotification(data.data)
+      // 如果不在聊天页面或不是当前聊天窗口，显示通知
+      const currentPath = window.location.pathname
+      if (!currentPath.includes('/chat') ||
+          chatStore.currentChat?.friendUserId !== data.data.senderId) {
+        this.showMessageNotification(data.data)
       }
-    } catch (error) {
-      console.error('处理通知失败:', error)
     }
+  } catch (error) {
+    console.error('处理消息失败:', error)
   }
+}
+
+// 添加消息通知方法
+private showMessageNotification(message: any) {
+  // 播放提示音
+  this.playNotificationSound()
+
+  // 显示桌面通知
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(`${message.senderName || '好友'} 发来新消息`, {
+      body: message.messageType === 0 ? message.content :
+            message.messageType === 1 ? '[图片]' : '[文件]',
+      icon: message.senderAvatar || '/logo.png',
+      tag: `message-${message.messageId}`
+    })
+  }
+}
 
   // 播放提示音
   private playNotificationSound() {

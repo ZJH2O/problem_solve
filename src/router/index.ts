@@ -50,6 +50,7 @@ const router = createRouter({
           component: () => import('@/views/PlanetDetailView.vue'),
           props: true
         },
+
         {
           path:'/user',
           name:'user',
@@ -63,6 +64,13 @@ const router = createRouter({
               path:'friends',
               name:'UserFriends',
               component :() => import('@/views/FriendView.vue'),
+              children: [
+                {
+                  path: 'chat/:friendId',
+                  name: 'FriendChat',
+                  component: () => import('@/views/ChatView.vue'),
+                  props: true
+                }]
             },
             {
               path:'messages',
