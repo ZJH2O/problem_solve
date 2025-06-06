@@ -33,8 +33,18 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
         console.error('初始化星系列表失败:', error)
       }
     },
-    async initPlanets(){
-
+    async initPlanets(galaxyId:string){
+      try{
+        const res = await service.get<ResponseMessage<KnowledgePlanetDto[]>>(
+          `/galaxy/${galaxyId}/planets`
+        )
+        if(res.data.code === 200){
+          this.galaxyPlanets = res.data.data || []
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`加载星系星球失败: ${error}`)
+      }
     },
     // 创建星系
     async createGalaxy(data:{
