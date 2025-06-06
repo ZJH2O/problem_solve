@@ -99,16 +99,7 @@ export const useCommentStore = defineStore('comment', {
         )
         console.log("开始点赞")
         if (response.data.code === 200) {
-          // 更新本地数据
-          const targetComment = this.currentComment
-          if (targetComment) {
-           if(response.data.data === "点赞成功"){
-            targetComment.likeCount += 1
-           }
-           if(response.data.data === "取消点赞"){
-            targetComment.likeCount -= 1
-           }
-          }
+
           console.log(response.data.data)
           return response.data.data
         }

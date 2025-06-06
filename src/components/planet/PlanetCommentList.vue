@@ -197,10 +197,7 @@ const toggleLike = async (comment: PlanetCommentDto) => {
   if (!comment.planetCommentId || comment.planetCommentId <= 0) {
     console.error('无效评论ID:', comment.planetCommentId);
     return;
-}
-  const oldCount = comment.likeCount;
-  comment.likeCount += comment.isLiked ? -1 : 1;
-  comment.isLiked = !comment.isLiked;
+};
 
   if (!userId.value) {
     alert('请先登录')
@@ -214,8 +211,6 @@ const toggleLike = async (comment: PlanetCommentDto) => {
     commentId: comment.planetCommentId
   }).catch(error => {
     // 操作失败时回滚状态
-    comment.likeCount = oldCount;
-    comment.isLiked = !comment.isLiked;
     console.error('点赞失败:', error)
   })
 };
