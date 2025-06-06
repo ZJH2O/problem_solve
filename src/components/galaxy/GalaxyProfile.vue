@@ -69,7 +69,7 @@ const formatDate = (dateString?: string) => {
             {{ galaxy.label || '未分类星域' }}
           </span>
           <span class="permission-tag" :class="galaxy.permission === 0 ? 'public' : 'private'">
-            {{ galaxy.permission === 0 ? '公共星域' : '私有星域' }}
+            {{ galaxy.permission === 1 ? '公共星域' : '私有星域' }}
           </span>
         </div>
       </div>

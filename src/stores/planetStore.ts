@@ -35,7 +35,7 @@ export const usePlanetStore = defineStore('planet', {
     // 新增方法：计算访客数量范围
     calculateVisitorRange() {
       if (this.planets.length === 0) {
-        this.minVisitors = 0;
+        this.minVisitors = 400;
         this.maxVisitors = 0;
         return;
       }

@@ -1,12 +1,11 @@
 <template>
   <div>
-    <h>这是星系里面</h>
-    <GalaxyControl />
+    <h>这是设置页面</h>
   </div>
 </template>
 
 <script setup lang="ts">
-import GalaxyControl from '@/components/galaxy/GalaxyControl.vue';
+
 
 
 

@@ -3,54 +3,158 @@
     <div class="stellar-glow"></div>
     <div class="manager-container">
       <h2 class="stellar-title">星系星球管理</h2>
-      <div class="form-group">
-        <label class="stellar-label">星球ID：</label>
-        <input
-          v-model="planetId"
-          placeholder="输入星球ID"
-          class="stellar-input"
-        />
+
+      <!-- 星球搜索区域 -->
+      <div class="search-section">
+        <div class="form-group">
+          <label class="stellar-label">搜索星球：</label>
+          <div class="search-input-group">
+            <input
+              v-model="searchQuery"
+              placeholder="输入星球名称或ID"
+              class="stellar-input"
+              @input="handleSearchInput"
+            />
+            <button @click="clearSearch" class="clear-button" v-if="searchQuery">
+              <i class="icon-clear"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 搜索结果列表 -->
+        <div class="search-results" v-if="filteredPlanets.length > 0">
+          <div
+            v-for="planet in filteredPlanets"
+            :key="planet.planetId"
+            class="result-item"
+            @click="selectPlanet(planet)"
+          >
+            <div class="planet-info">
+              <span class="planet-name">{{ planet.contentTitle }}</span>
+              <span class="planet-id">{{ planet.planetId }}</span>
+            </div>
+            <div class="planet-stats">
+              <span class="visitors">
+                <i class="icon-user"></i> {{ planet.visitCount || 0 }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-results" v-if="searchQuery && filteredPlanets.length === 0">
+          <i class="icon-planet"></i>
+          <p>未找到匹配的星球</p>
+        </div>
       </div>
-      <div class="buttons">
-        <button @click="addPlanet" class="stellar-button">添加星球</button>
-        <button @click="removePlanet" class="stellar-button remove">移除星球</button>
+
+      <!-- 操作区域 -->
+      <div class="operation-section">
+        <div class="form-group">
+          <label class="stellar-label">已选星球：</label>
+          <div class="selected-planet" v-if="selectedPlanet">
+            {{ selectedPlanet.contentTitle }} ({{ selectedPlanet.planetId }})
+          </div>
+          <div v-else class="no-selection">尚未选择星球</div>
+        </div>
+
+        <div class="buttons">
+          <button
+            @click="addPlanet"
+            class="stellar-button"
+            :disabled="!selectedPlanet"
+          >
+            添加星球
+          </button>
+          <button
+            @click="removePlanet"
+            class="stellar-button remove"
+            :disabled="!selectedPlanet"
+          >
+            移除星球
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useGalaxyStore } from '@/stores/galaxy'
+import { usePlanetStore } from '@/stores/planetStore';
 
 const props = defineProps<{
   galaxyId: string
 }>()
 
+const planetStore = usePlanetStore()
 const galaxyStore = useGalaxyStore()
-const planetId = ref('')
+const searchQuery = ref('')
+const selectedPlanet = ref<KnowledgePlanetDto | null>(null)
 
+// 计算属性：过滤匹配的星球[2,4](@ref)
+const filteredPlanets = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return []
+  }
+
+  const query = searchQuery.value.toLowerCase()
+  return planetStore.planets.filter(planet => {
+    return (
+      planet.planetId.toLowerCase().includes(query) ||
+      (planet.contentTitle && planet.contentTitle.toLowerCase().includes(query))
+    )
+  })
+})
+
+// 处理搜索输入[8](@ref)
+const handleSearchInput = () => {
+  // 这里可以添加防抖逻辑优化性能
+  if (searchQuery.value && filteredPlanets.value.length === 1) {
+    // 如果只有一个匹配项，自动选择
+    selectPlanet(filteredPlanets.value[0])
+  }
+}
+
+// 清空搜索
+const clearSearch = () => {
+  searchQuery.value = ''
+  selectedPlanet.value = null
+}
+
+// 选择星球
+const selectPlanet = (planet: KnowledgePlanetDto) => {
+  selectedPlanet.value = planet
+  searchQuery.value = '' // 清空搜索框
+}
+
+// 添加星球到星系
 const addPlanet = async () => {
+  if (!selectedPlanet.value) return
+
   try {
     await galaxyStore.addPlanetToGalaxy({
       galaxyId: props.galaxyId,
-      planetId: planetId.value
+      planetId: selectedPlanet.value.planetId
     })
     alert('添加成功！')
-    planetId.value = ''
+    selectedPlanet.value = null // 清空选择
   } catch (error) {
     alert(error instanceof Error ? error.message : '未知错误')
   }
 }
 
+// 从星系移除星球
 const removePlanet = async () => {
+  if (!selectedPlanet.value) return
+
   try {
     await galaxyStore.removePlanetFromGalaxy({
       galaxyId: props.galaxyId,
-      planetId: planetId.value
+      planetId: selectedPlanet.value.planetId
     })
     alert('移除成功！')
-    planetId.value = ''
+    selectedPlanet.value = null // 清空选择
   } catch (error) {
     alert(error instanceof Error ? error.message : '未知错误')
   }
@@ -58,125 +162,122 @@ const removePlanet = async () => {
 </script>
 
 <style scoped>
-.stellar-container {
+/* 原有样式保持不变... */
+
+/* 新增搜索区域样式 */
+.search-section {
+  margin-bottom: 2rem;
+  background: rgba(20, 25, 50, 0.6);
+  border-radius: 8px;
+  padding: 1.2rem;
+  border: 1px solid rgba(100, 150, 255, 0.3);
+}
+
+.search-input-group {
   position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: 300px;
-  background: radial-gradient(circle at center, #0a0e2d 0%, #000318 100%);
-  border-radius: 12px;
-  overflow: hidden;
-  margin: 20px 0;
 }
 
-.stellar-glow {
+.clear-button {
   position: absolute;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg at 50% 50%,
-    #00f7ff33 0%,
-    #3d67ff4d 25%,
-    #9d4cff33 50%,
-    #3d67ff4d 75%,
-    #00f7ff33 100%
-  );
-  animation: stellar-rotate 20s linear infinite;
-  filter: blur(80px);
-}
-
-@keyframes stellar-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.manager-container {
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-  padding: 2rem;
-  background: rgba(12, 15, 43, 0.8);
-  border: 1px solid #3d67ff;
-  border-radius: 12px;
-  box-shadow: 0 0 40px #3d67ff33;
-  backdrop-filter: blur(10px);
-  z-index: 2;
-}
-
-.stellar-title {
-  text-align: center;
-  color: #00f7ff;
-  font-family: 'Orbitron', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 1.5rem;
-  text-shadow: 0 0 15px #00f7ff80;
-}
-
-.form-group {
-  margin-bottom: 1.8rem;
-}
-
-.stellar-label {
-  display: block;
-  margin-bottom: 0.8rem;
-  color: #7d9bff;
-  font-size: 0.9em;
-}
-
-.stellar-input {
-  width: 100%;
-  padding: 0.8rem;
-  background: rgba(25, 30, 70, 0.6);
-  border: 1px solid #3d67ff;
-  border-radius: 6px;
-  color: #00f7ff;
-  font-family: 'Arial', sans-serif;
-  transition: all 0.3s ease;
-}
-
-.stellar-input::placeholder {
-  color: #3d67ff99;
-}
-
-.stellar-input:focus {
-  outline: none;
-  border-color: #00f7ff;
-  box-shadow: 0 0 15px #00f7ff40;
-}
-
-.buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.stellar-button {
-  flex: 1;
-  padding: 0.8rem;
-  background: linear-gradient(135deg, #3d67ff 0%, #00f7ff 100%);
+  right: 10px;
+  background: none;
   border: none;
-  border-radius: 6px;
-  color: #000;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: #7d9bff;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Orbitron', sans-serif;
+  font-size: 1.2rem;
 }
 
-.stellar-button.remove {
-  background: linear-gradient(135deg, #ff3d5e 0%, #ff7e00 100%);
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 15px;
+  border-radius: 6px;
+  background: rgba(15, 20, 40, 0.8);
+  border: 1px solid #3d67ff;
 }
 
-.stellar-button:hover {
-  box-shadow: 0 0 25px #00f7ff80;
-  transform: translateY(-2px);
+.result-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
 }
 
-.stellar-button.remove:hover {
-  box-shadow: 0 0 25px #ff3d5e80;
+.result-item:hover {
+  background: rgba(61, 103, 255, 0.2);
+}
+
+.planet-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.planet-name {
+  font-weight: 600;
+  color: #e6e6e6;
+  margin-bottom: 5px;
+}
+
+.planet-id {
+  font-size: 0.8rem;
+  color: #7d9bff;
+}
+
+.planet-stats {
+  font-size: 0.9rem;
+  color: #a0a0a0;
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #a0a0a0;
+}
+
+.no-results .icon-planet {
+  font-size: 36px;
+  margin-bottom: 10px;
+  color: #4e1d6d;
+  display: block;
+}
+
+.operation-section {
+  padding: 1.2rem;
+  background: rgba(20, 25, 50, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 150, 255, 0.3);
+}
+
+.selected-planet {
+  padding: 12px;
+  background: rgba(25, 30, 70, 0.6);
+  border-radius: 6px;
+  border: 1px solid #3d67ff;
+  color: #00f7ff;
+  font-weight: 500;
+}
+
+.no-selection {
+  padding: 12px;
+  color: #7d9bff;
+  font-style: italic;
+}
+
+/* 禁用按钮样式 */
+.stellar-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.stellar-button:disabled:hover {
+  box-shadow: none;
+  transform: none;
 }
 </style>

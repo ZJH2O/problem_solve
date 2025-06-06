@@ -76,7 +76,7 @@
             <label>访问权限</label>
             <div class="permission-options">
               <label class="permission-option">
-                <input type="radio" v-model="form.permission" :value="0">
+                <input type="radio" v-model="form.permission" :value="1">
                 <div class="option-content">
                   <div class="permission-icon public">🔓</div>
                   <div>
@@ -87,7 +87,7 @@
               </label>
 
               <label class="permission-option">
-                <input type="radio" v-model="form.permission" :value="1">
+                <input type="radio" v-model="form.permission" :value="0">
                 <div class="option-content">
                   <div class="permission-icon private">🔒</div>
                   <div>
