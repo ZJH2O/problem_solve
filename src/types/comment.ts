@@ -1,5 +1,5 @@
 export interface PlanetCommentDto {
-  commentId: number;
+  planetCommentId: number;
   planetId: string;
   userId: number;
   content: string;
@@ -10,6 +10,7 @@ export interface PlanetCommentDto {
   createTime: string;
   updateTime: string;
   replies?: PlanetCommentDto[];
+  isLiked?: boolean
 }
 
 export interface CreateCommentPayload {
@@ -19,10 +20,7 @@ export interface CreateCommentPayload {
   parentId?: number; // 可选，默认为0（顶级评论）
 }
 
-export interface UpdateLikeCountPayload {
-  commentId: number;
-  likeCount: number;
-}
+
 
 export interface UpdateStatusPayload {
   commentId: number;

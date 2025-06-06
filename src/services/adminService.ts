@@ -1,5 +1,5 @@
 import axios from '@/utils/axios'
-import type { SystemAdmin } from '@/types'
+import type { SystemAdmin } from '@/types/admin'
 
 const BASE_URL = '/api/admin'
 

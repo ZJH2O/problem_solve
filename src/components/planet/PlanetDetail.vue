@@ -1,10 +1,10 @@
 <!-- components/PlanetDetail.vue -->
 <template>
-  <div class="planet-detail">
+  <div class="planet-detail cosmic-bg">
     <!-- 头部信息 -->
-    <header class="detail-header">
-      <h1 class="title">{{ planet.contentTitle }}</h1>
-      <div class="meta">
+    <div class="detail-header cosmic-card">
+      <h1 class="title cosmic-glow">{{ planet.contentTitle }}</h1>
+      <div class="meta cosmic-data">
         <span class="visitors">👥 {{ planet.visitCount }} 访问</span>
         <span class="created-at">📅 {{ formatDateTime(planet.createTime) }}</span>
       </div>
@@ -15,7 +15,7 @@
           :class="{'published': planet.visibility === 1}"
           :disabled="publishing"
         >
-          {{ planet.visibility === 1 ? '已上传到知识宇宙' : '上传到知识宇宙' }}
+          {{ planet.visibility === 1 ? '✅ 已上传到知识宇宙' : '🚀 上传到知识宇宙'  }}
           <span v-if="publishing" class="loading"></span>
         </button>
 
@@ -26,22 +26,25 @@
           :class="{'favorited': isFavorite}"
           :disabled="favoriting"
         >
-          {{ isFavorite ? '已设为最爱' : '设为最爱' }}
+          {{ isFavorite ? '⭐ 已设为星际最爱' : '✨ 设为星际最爱' }}
           <span v-if="favoriting" class="loading"></span>
         </button>
       </div>
 
-    </header>
+    </div>
 
     <!-- 主要内容区 -->
     <main class="detail-content">
        <!-- 左边：描述区 -->
        <div class="left-section">
-      <section class="description">
-        <h2>星球描述</h2>
-        <p>{{ planet.description }}</p>
-      </section>
-      <button @click="showDescriptionForm = true" class="edit-btn">更新描述</button>
+      <section class="intro-section">
+      <div class="section-header">
+        <h2>星球档案</h2>
+        <button @click="showDescriptionForm = true" class="custom-btn edit-btn">更新描述</button>
+      </div>
+      <div class="intro-grid">
+        {{ planet.description }}
+      </div>
       <div v-if="showDescriptionForm" class="modal-overlay">
         <div class="modal-content">
           <h3>更新描述</h3>
@@ -69,15 +72,17 @@
           </div>
         </div>
       </div>
+      </section>
 
-      <!-- 推荐知识 -->
       <section class="knowledge-section">
-        <h2>推荐知识</h2>
+        <div class="section-header">
+          <h2>星球知识库</h2>
+          <button @click="showCDetailForm = true" class="custom-btn edit-btn">更新知识</button>
+        </div>
         <div class="knowledge-grid">
           {{ planet.contentDetail }}
         </div>
       </section>
-      <button @click="showCDetailForm = true" class="edit-btn">更新知识</button>
       <div v-if="showCDetailForm" class="modal-overlay">
         <div class="modal-content">
           <h3>更新知识</h3>
@@ -111,42 +116,11 @@
       <!-- 右边：评论区 -->
       <div class="right-section">
       <section class="comments-section">
-        <h2>读者评论（{{ commentCount }}）</h2>
-
-        <div class="comment-list">
-          <div
-            v-for="comment in planet.contentDetail?.readerComments"
-            :key="comment.id"
-            class="comment-item"
-          >
-            <div class="user-info">
-              <img
-                :src="comment.user.avatarUrl"
-                :alt="comment.user.username"
-                class="avatar"
-              >
-              <span class="username">{{ comment.user.username }}</span>
-            </div>
-            <p class="content">{{ comment.content }}</p>
-            <div class="comment-actions">
-              <button @click="toggleLike(comment.id)">
-                👍 {{ comment.reactions?.like || 0 }}
-              </button>
-              <button @click="showReplyForm(comment.id)">回复</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 评论输入框，固定在底部 -->
-        <div class="comment-form">
-          <textarea
-            v-model="newComment"
-            placeholder="写下你的评论..."
-          ></textarea>
-          <button @click="submitComment">提交评论</button>
+        <div>
+          <PlanetCommentList />
         </div>
       </section>
-      </div>
+    </div>
     </main>
   </div>
 </template>
@@ -156,12 +130,13 @@ import { computed, reactive, ref } from 'vue';
 import { usePlanetStore } from '@/stores/planetStore';
 import type { KnowledgePlanetDto } from '@/types/planet';
 import { useUserStore } from '@/stores/user';
+import PlanetCommentList from '@/components/planet/PlanetCommentList.vue';
 
 const showDescriptionForm = ref(false)
 const showCDetailForm = ref(false)
 const store = usePlanetStore();
 const userStore = useUserStore();
-const newComment = ref('');
+
 const publishing = ref(false);
 const DescriptionForm = reactive({
   newDescription: ''
@@ -298,64 +273,31 @@ const togglePublishStatus = async () => {
 };
 
 
-const commentCount = computed(() => {
-  return props.planet.details?.readerComments?.length || 0;
-});
-
-// 方法
-const submitComment = () => {
-  if (!userStore.currentUser) {
-    alert('请先登录后再发表评论');
-    return;
-  }
-
-  if (newComment.value.trim()) {
-    store.addComment(props.planet.id, {
-      content: newComment.value,
-      user: userStore.currentUser
-    });
-    newComment.value = '';
-  }
-
-  console.log('当前星球数据:', props.planet);
-  console.log('Store数据:', store.planets);
-};
-
-const toggleLike = (commentId: string) => {
-  store.toggleReaction(props.planet.id, commentId, 'like');
-};
-
-const showReplyForm = (commentId: string) => {
-  // 实现回复功能
-};
-
-
 
 </script>
 
 <style scoped>
 .planet-detail {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  height: 130vh;
+  margin-top: -50px;
 }
 
 .detail-header {
-  border-bottom: 2px solid #eeeeee1c;
   padding-bottom: 1rem;
   margin-bottom: 2rem;
 }
 
 .title {
   font-size: 2.5rem;
-  color: #2c3e50;
+  color:#00c9ff;
   margin-bottom: 0.5rem;
 }
 
 .meta {
   display: flex;
   gap: 1.5rem;
-  color: #666;
 }
 
 .detail-content {
@@ -381,51 +323,6 @@ const showReplyForm = (commentId: string) => {
   transform: translateY(-3px);
 }
 
-/* 作者留言样式 */
-.message-card {
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.author-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-}
-
-/* 评论区域样式 */
-.comment-form {
-  margin-bottom: 2rem;
-}
-
-.comment-form textarea {
-  width: 100%;
-  height: 100px;
-  margin-bottom: 1rem;
-}
-
-.comment-item {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-}
-
-.comment-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -671,12 +568,12 @@ input:focus, textarea:focus {
 
 /* 左边区域 */
 .left-section {
-  flex: 5; /* 占据70%宽度 */
+  flex: 5; /* 占据50%宽度 */
 }
 
 /* 右边区域 */
 .right-section {
-  flex: 5; /* 占据30%宽度 */
+  flex: 5; /* 占据50%宽度 */
   position: relative;
   height: 100%;
 }
@@ -685,11 +582,11 @@ input:focus, textarea:focus {
 .comments-section {
   display: flex;
   flex-direction: column;
-  height: 80vh; /* 设置固定高度 */
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  height: 100vh; /* 设置固定高度 */
+  border: 1px solid rgba(48, 161, 231, 0.406);
   border-radius: 8px;
   padding: 1rem;
-  background: rgba(16, 22, 58, 0.5);
+
 }
 
 /* 评论列表，设置滚动 */
@@ -745,5 +642,113 @@ input:focus, textarea:focus {
   .left-section, .right-section {
     width: 100%;
   }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* 增加分隔空间 */
+.section-divider {
+  height: 40px; /* 增加40px的垂直间距 */
+}
+
+/* 或者使用外边距增加间距 */
+.intro-section {
+  padding: 40px;
+  margin-bottom: 40px; /* 在星球档案下方增加40px间距 */
+  border: 1px solid rgba(48, 161, 231, 0.406);
+  min-height: 30vh;
+  border-radius: 1%;
+}
+
+.knowledge-section {
+  padding: 40px;
+  margin-top: 40px; /* 在星际知识库上方增加40px间距 */
+  border: 1px solid rgba(48, 161, 231, 0.406);
+  min-height: 66vh;
+  border-radius: 1%;
+}
+
+/* 响应式调整：小屏幕减少间距 */
+@media (max-width: 768px) {
+  .section-divider {
+    height: 20px;
+  }
+
+  .intro-section {
+    margin-bottom: 20px;
+  }
+
+  .knowledge-section {
+    margin-top: 20px;
+  }
+}
+.cosmic-bg {
+  background:  #0a1a2a;
+  color: #e0f7fa;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.cosmic-card {
+  background: rgba(12, 35, 66, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.cosmic-section {
+  margin-bottom: 25px;
+  padding: 15px;
+  background: rgba(8, 25, 48, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 238, 255, 0.3);
+}
+
+/* 编辑星系按钮 - 渐变效果 */
+.edit-btn {
+  background: linear-gradient(to right, #9a9aff 0%, #fad0c4 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 编辑图标 - 纯CSS实现 */
+.edit-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
+  background-size: contain;
+}
+/* 自定义按钮基础样式 */
+.custom-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+/* 按钮悬停效果 */
+.custom-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 按钮点击效果 */
+.custom-btn:active {
+  transform: translateY(1px);
 }
 </style>

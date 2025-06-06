@@ -33,6 +33,7 @@ onMounted(() => {
   if (planetId) {
     fetchPlanet(planetId);
   }
+  console.log(store.currentPlanet)
 });
 
 async function fetchPlanet(planetId: string) {
