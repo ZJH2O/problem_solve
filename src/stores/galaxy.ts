@@ -140,8 +140,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     async deleteGalaxy(galaxyId: string) {
       try {
         const response = await service.delete<ResponseMessage<string>>(
-          '/galaxy/delete',
-          { data: { galaxyId } }
+          `/galaxy/delete/${galaxyId}`
         )
 
         if (response.data.code === 200) {

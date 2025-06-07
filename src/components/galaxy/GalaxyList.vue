@@ -37,6 +37,11 @@
         class="galaxy-card"
         :class="{'public': galaxy.permission === 1, 'private': galaxy.permission === 0}"
       >
+        <!-- 添加删除按钮 -->
+        <button class="delete-btn" @click.stop="confirmDeleteGalaxy(galaxy)" v-if="userStore.userInfo.userId==galaxy.userId">
+          ×
+        </button>
+
         <div class="card-header">
           <div class="galaxy-icon">
           </div>
@@ -157,6 +162,7 @@ import GalaxyCreator from './GalaxyCreator.vue';
 import router from '@/router';
 import { useFriendStore } from '@/stores/friend';
 import type { FriendDto } from '@/types/friend';
+import { useUserStore } from '@/stores/user';
 const galaxyStore = useGalaxyStore();
 const searchTerm = ref('');
 const friendStore = useFriendStore();
@@ -164,7 +170,7 @@ const showShareModal = ref(false);
 const shareGalaxyData = ref<KnowledgeGalaxyDto | null>(null);
 const friendSearchKeyword = ref('');
 const friends = ref<FriendDto[]>([]);
-
+const userStore = useUserStore()
 // 初始化星系数据
 onMounted(async () => {
       await galaxyStore.init();
@@ -260,6 +266,27 @@ onMounted(async () => {
       galaxyStore.showCreator = true;
     };
 
+    // 新增：确认删除星系
+const confirmDeleteGalaxy = (galaxy: KnowledgeGalaxyDto) => {
+  if (!galaxy.galaxyId) return;
+
+  // 使用浏览器原生确认对话框
+  if (confirm(`确定要删除星系 "${galaxy.name}" 吗？此操作不可撤销！`)) {
+    deleteGalaxy(galaxy.galaxyId);
+  }
+};
+
+// 新增：执行删除操作
+const deleteGalaxy = async (galaxyId: string) => {
+  try {
+    await galaxyStore.deleteGalaxy(galaxyId);
+    // 可选：显示成功消息
+    alert(`星系已成功删除`);
+  } catch (error) {
+    console.error('删除星系失败:', error);
+    alert(`删除失败: ${error.message || '请重试'}`);
+  }
+};
 
 
 </script>
@@ -812,5 +839,37 @@ onMounted(async () => {
   background: linear-gradient(to right, #4a4a8a, #2a2a5a);
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+/* 新增删除按钮样式 */
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(to right, #ff6b6b00, #ff383800);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  transform: scale(1.1);
+
+}
+
+/* 确保卡片头部有足够的空间 */
+.card-header {
+  position: relative;
+  padding-right: 30px; /* 为删除按钮留出空间 */
 }
 </style>
