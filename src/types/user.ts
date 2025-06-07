@@ -29,3 +29,9 @@ export interface Reward {
   fuelValue?:number
   knowledgeDust?:number
 }
+
+export interface viewUser{
+  nickname: string
+  email: string
+  bio:string
+}

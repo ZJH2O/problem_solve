@@ -27,11 +27,11 @@ const planet = computed(() => {
   return store.currentPlanet
 });
 
-onMounted(() => {
+onMounted(async() => {
   // 从路由参数获取星球ID
   const planetId = route.params.id as string;
   if (planetId) {
-    fetchPlanet(planetId);
+    await fetchPlanet(planetId);
   }
   console.log(store.currentPlanet)
 });

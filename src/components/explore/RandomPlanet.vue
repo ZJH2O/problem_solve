@@ -146,8 +146,8 @@ const selectPlanet = (planet: KnowledgePlanetDto) => {
   // 在store中设置当前星球
   store.currentPlanet = planet;
 
-  // 调用访问星球的方法
-  store.VisitPlanet(planet.planetId);
+  // // 调用访问星球的方法
+  // store.VisitPlanet(planet.planetId);
 };
 
 watch(() => props.planet, (newPlanet) => {

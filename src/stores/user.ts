@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Reward, TokenState, UserBrief, UserState } from '@/types/user'
+import type { Reward, TokenState, UserBrief, UserState, viewUser } from '@/types/user'
 import service from '@/utils/request'
 import type { LoginResponse, ResponseMessage } from '@/types/api'
 
@@ -256,6 +256,18 @@ export const useUserStore = defineStore('user', {
     },
     consumeFuel() {
       this.currentFule-- // 通过action修改
+    },
+    async ClickUserInfo(userId:number){
+      try{
+        const res = await service.get<ResponseMessage<viewUser>>(
+          `/user/getuserinfo/${userId}`
+        )
+        if(res.data.code === 200){
+          return res.data.data
+        }
+      }catch(error){
+        console.log(error)
+      }
     }
   }
 })
