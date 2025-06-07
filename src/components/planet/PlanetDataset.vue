@@ -46,14 +46,15 @@
       </div>
       </div>
     </transition>
-    <div class="AddDetail">
+
+  </div>
+  <div>
       <AddDetail
         v-if="showAddDialog"
         @submit="handleAddSubmit"
         @cancel="showAddDialog = false"
       />
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
