@@ -24,7 +24,7 @@
             进入星系
           </button>
           <button class="custom-btn edit-btn" @click="openEditor">
-            <span class="edit-icon"></span> 编辑星系
+            <span class="edit-icon"  v-if="galaxyStore.currentGalaxy?.userId == userStore.userInfo.userId"></span> 编辑星系
           </button>
         </div>
       </div>

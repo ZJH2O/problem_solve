@@ -2,7 +2,7 @@ export interface KnowledgePlanetDto {
   planetId?: string
   contentTitle: string
   contentDetail?:string
-  creatorId: string
+  userId: string
   themeId: number
   coverUrl?: string
   visibility?: 0 | 1

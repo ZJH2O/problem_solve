@@ -10,6 +10,7 @@
       </div>
       <div class="btn-section">
         <button
+          v-if="store.currentPlanet?.userId == userStore.userInfo.userId"
           @click="togglePublishStatus"
           class="publish-btn"
           :class="{'published': planet.visibility === 1}"
@@ -21,6 +22,7 @@
 
         <!-- 新增的设为最爱按钮 -->
         <button
+          v-if="store.currentPlanet?.userId == userStore.userInfo.userId"
           @click="toggleFavoriteStatus"
           class="favorite-btn"
           :class="{'favorited': isFavorite}"
@@ -40,7 +42,7 @@
       <section class="intro-section">
       <div class="section-header">
         <h2>星球档案</h2>
-        <button @click="showDescriptionForm = true" class="custom-btn edit-btn">更新描述</button>
+        <button @click="showDescriptionForm = true" class="custom-btn edit-btn"  v-if="store.currentPlanet?.userId == userStore.userInfo.userId">更新描述</button>
       </div>
       <div class="intro-grid">
         {{ planet.description }}
@@ -77,7 +79,7 @@
       <section class="knowledge-section">
         <div class="section-header">
           <h2>星球知识库</h2>
-          <button @click="showCDetailForm = true" class="custom-btn edit-btn">更新知识</button>
+          <button @click="showCDetailForm = true" class="custom-btn edit-btn"  v-if="store.currentPlanet?.userId == userStore.userInfo.userId">更新知识</button>
         </div>
         <div class="knowledge-grid">
           {{ planet.contentDetail }}

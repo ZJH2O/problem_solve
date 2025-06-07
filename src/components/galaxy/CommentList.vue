@@ -13,17 +13,7 @@ const currentPage = ref(1)
 const isLoading = ref(false)
 const errorComments = ref<number[]>([]) // 存储无效评论ID
 
-// 安全评论过滤
-const safeComments = computed(() => {
-  return commentStore.currentComments.filter(comment => {
-    const isValid = comment.galaxyCommentId && comment.content
-    if (!isValid) {
-      if (comment.galaxyCommentId) errorComments.value.push(comment.galaxyCommentId)
-      console.warn('无效评论:', comment)
-    }
-    return isValid
-  })
-})
+
 
 onMounted(() => loadComments())
 
@@ -48,7 +38,6 @@ const loadComments = async (page = 1) => {
 const handleLike = (comment: GalaxyCommentDto) => {
   if (!comment.galaxyCommentId) {
     console.error('无效评论ID:', comment)
-    errorComments.value.push(comment.tempId || Date.now())
     return
   }
   const oldCount = comment.likeCount;
