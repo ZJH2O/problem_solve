@@ -515,7 +515,7 @@ const handleAccountDelete = async () => {
 .user-manager {
   max-width: 800px;
   margin: 2rem auto;
-  margin-top: -80px;
+  margin-top: -50px;
   padding: 2rem;
   background: radial-gradient(circle at center, #0a0f2b 0%, #020617 100%);
   border: 1px solid #00eeff;

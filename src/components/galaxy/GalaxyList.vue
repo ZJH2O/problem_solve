@@ -80,6 +80,73 @@
       <button class="create-btn" @click="addGalaxy">创建新星系</button>
     </div>
   </div>
+
+  <!-- 分享模态框 -->
+  <div v-if="showShareModal" class="share-modal">
+    <div class="modal-overlay" @click="showShareModal = false"></div>
+
+    <div class="modal-content cosmic-modal">
+      <div class="modal-header">
+        <h3>分享星系: {{ shareGalaxyData?.name }}</h3>
+        <button class="close-btn" @click="showShareModal = false">
+          ×
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 搜索框 -->
+        <div class="search-container">
+          <input
+            v-model="friendSearchKeyword"
+            type="text"
+            placeholder="搜索好友名称..."
+            class="quantum-input"
+          />
+          <i class="fas search-icon">🔍</i>
+        </div>
+
+        <!-- 好友列表 -->
+        <div class="friend-list">
+          <div v-if="filteredFriends.length === 0" class="empty-friends">
+
+            <p>未找到匹配的好友</p>
+          </div>
+
+          <div
+            v-for="friend in filteredFriends"
+            :key="friend.friendId"
+            class="friend-item"
+          >
+            <div class="friend-info">
+              <div class="friend-avatar">
+                <svg class="mini-energy-core">
+                  <circle cx="50%" cy="50%" r="45%" fill="#00f7ff" />
+                </svg>
+              </div>
+              <div class="friend-details">
+                <span class="friend-name">{{ friend.friendNickname }}</span>
+                <span class="friend-status" :class="friend.isOnline ? 'online' : 'offline'">
+                  {{ friend.isOnline ? '在线' : '离线' }}
+                </span>
+              </div>
+            </div>
+            <button
+              class="share-action-btn"
+              @click="sendShareRequest(friend.friendUserId)"
+
+            >
+              <!-- <span v-if="friend.isSharing">
+                <i class="fas fa-spinner fa-spin"></i> 发送中...
+              </span> -->
+              <span >
+                 分享
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -88,8 +155,15 @@ import { useGalaxyStore } from '@/stores/galaxy';
 import type { KnowledgeGalaxyDto } from '@/types/galaxy';
 import GalaxyCreator from './GalaxyCreator.vue';
 import router from '@/router';
+import { useFriendStore } from '@/stores/friend';
+import type { FriendDto } from '@/types/friend';
 const galaxyStore = useGalaxyStore();
 const searchTerm = ref('');
+const friendStore = useFriendStore();
+const showShareModal = ref(false);
+const shareGalaxyData = ref<KnowledgeGalaxyDto | null>(null);
+const friendSearchKeyword = ref('');
+const friends = ref<FriendDto[]>([]);
 
 // 初始化星系数据
 onMounted(async () => {
@@ -121,8 +195,64 @@ onMounted(async () => {
     };
 
     const shareGalaxy = (galaxy: KnowledgeGalaxyDto) => {
-      console.log('分享星系:', galaxy.name);
-      // 实现分享逻辑
+      shareGalaxyData.value = galaxy;
+      showShareModal.value = true;
+      loadFriends();
+    };
+
+    // 加载好友列表
+    const loadFriends = async () => {
+      try {
+        await friendStore.fetchFriendList();
+        friends.value = friendStore.acceptedFriends.map(friend => ({
+          ...friend,
+          isSharing: false
+        }));
+      } catch (error) {
+        console.error('加载好友列表失败:', error);
+      }
+    };
+
+
+    // 过滤好友列表
+    const filteredFriends = computed(() => {
+      if (!friendSearchKeyword.value) {
+        return friends.value.slice(0, 4); // 默认展示最多4个好友
+      }
+
+      const keyword = friendSearchKeyword.value.toLowerCase();
+      return friends.value.filter(friend =>
+        friend.friendNickname?.toLowerCase().includes(keyword)
+      );
+    });
+    // 发送分享请求
+    const sendShareRequest = async (friendUserId: number) => {
+      // if (!shareGalaxyData.value) return;
+
+      // try {
+      //   // 更新UI状态
+      //   const friend = friends.value.find(f => f.friendUserId === friendUserId);
+      //   if (friend) friend.isSharing = true;
+
+      //   // 发送分享请求
+      //   await friendStore.sendFriendRequest({
+      //     friendUserId,
+      //     source: 2, // 2表示星系分享
+      //     sourceId: shareGalaxyData.value.galaxyId.toString(),
+      //     requestMessage: `我想与你分享星系：${shareGalaxyData.value.name}`
+      //   });
+
+      //   // 成功提示
+      //   alert(`已成功分享星系给${friend?.friendName}`);
+      // } catch (error) {
+      //   console.error('分享失败:', error);
+      //   alert('分享失败，请重试');
+      // } finally {
+      //   // 重置状态
+      //   const friend = friends.value.find(f => f.friendUserId === friendUserId);
+      //   if (friend) friend.isSharing = false;
+      // }
+      console.log("已发送分享请求给:",friendUserId)
     };
 
     const addGalaxy = () => {
@@ -436,5 +566,251 @@ onMounted(async () => {
   box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
 }
 
+/* 分享模态框样式 */
+.share-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.cosmic-modal {
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(15, 10, 60, 0.95) 0%,
+    rgba(5, 0, 20, 0.95) 100%
+  );
+  border-radius: 16px;
+  border: 1px solid #4a4a8a;
+  box-shadow: 0 0 30px rgba(0, 180, 216, 0.4);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 1001;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(74, 74, 138, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #f0f0ff;
+  font-weight: 600;
+  background: linear-gradient(to right, #00b4d8, #90e0ef);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #a0a0ff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.search-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.quantum-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border: 1px solid #4a4a8a;
+  border-radius: 50px;
+  background: rgba(10, 15, 40, 0.8);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 180, 216, 0.2);
+}
+
+.quantum-input:focus {
+  outline: none;
+  border-color: #00b4d8;
+  box-shadow: 0 0 20px rgba(0, 180, 216, 0.4);
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #90e0ef;
+  font-size: 1.2rem;
+}
+
+.friend-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 50vh;
+  padding-right: 5px;
+}
+
+/* 好友列表滚动条样式 */
+.friend-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.friend-list::-webkit-scrollbar-track {
+  background: rgba(10, 15, 40, 0.3);
+  border-radius: 4px;
+}
+
+.friend-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #00f7ff, #7d9bff);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 247, 255, 0.5);
+}
+
+.friend-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #00c9ff, #ff55ff);
+}
+
+.empty-friends {
+  text-align: center;
+  padding: 2rem;
+  color: #a0a0ff;
+}
+
+.empty-friends i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #4a4a8a;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+  border-radius: 10px;
+  background: rgba(20, 25, 60, 0.5);
+  border: 1px solid rgba(74, 74, 138, 0.3);
+  transition: all 0.3s ease;
+}
+
+.friend-item:hover {
+  background: rgba(30, 35, 70, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.friend-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.friend-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4a00e0, #8e2de2);
+  overflow: hidden;
+}
+
+.mini-energy-core {
+  width: 35px;
+  height: 35px;
+  animation: core-rotate 8s linear infinite;
+}
+
+@keyframes core-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.friend-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-name {
+  font-weight: 600;
+  color: #f0f0ff;
+  font-size: 1rem;
+}
+
+.friend-status {
+  font-size: 0.8rem;
+}
+
+.friend-status.online {
+  color: #00e676;
+}
+
+.friend-status.offline {
+  color: #ff5252;
+}
+
+.share-action-btn {
+  background: linear-gradient(to right, #00b4d8, #0077b6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.share-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4);
+}
+
+.share-action-btn:disabled {
+  background: linear-gradient(to right, #4a4a8a, #2a2a5a);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
 </style>
