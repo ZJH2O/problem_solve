@@ -98,7 +98,7 @@ export const usePlanetStore = defineStore('planet', {
         )
         if(res.data.code === 200){
           this.currentPlanet = res.data.data
-          console.log("访问星球")
+          console.log("访问星球",this.currentPlanet.visitCount)
           this.calculateVisitorRange();
           return res.data.data
         }

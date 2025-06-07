@@ -45,9 +45,9 @@
           <!-- 评论主体 -->
           <div class="comment-main">
             <div class="comment-author">
-              <div class="cosmic-avatar">👽</div>
+              <div class="cosmic-avatar" @click="viewUserInfo(comment.userId)">👽</div>
               <div>
-                <span class="username cosmic-username">星际旅人#{{ comment.userId }}</span>
+                <span class="username cosmic-username"  @click="viewUserInfo(comment.userId)">星际旅人#{{ comment.userId }}</span>
                 <span class="timestamp cosmic-timestamp">{{ formatDateTime(comment.createTime) }}</span>
               </div>
             </div>
@@ -96,7 +96,7 @@
               class="reply-item cosmic-response"
             >
             <div class="reply-author">
-              <span class="username cosmic-username">👾 回应者#{{ reply.userId }}</span>
+              <span class="username cosmic-username" @click="viewUserInfo(comment.userId)">👾 回应者#{{ reply.userId }}</span>
             </div>
             <div class="reply-content cosmic-text">
               {{ reply.content }}
@@ -114,15 +114,101 @@
       </div>
     </div>
   </div>
+
+
+  <!-- 用户信息模态框 - 星际档案 -->
+  <div v-if="showUserModal" class="user-modal cosmic-modal">
+    <div class="modal-backdrop" @click.self="showUserModal = false"></div>
+
+    <div class="modal-content cosmic-profile">
+      <div class="modal-header">
+        <h3>👽 星际档案 #{{ viewingUser.userId }}</h3>
+        <button class="close-btn cosmic-button" @click="showUserModal = false">🚀 返回</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="user-avatar cosmic-avatar-large">
+          {{ viewingUser.avatar }}
+        </div>
+
+        <div class="user-details">
+          <div class="detail-item">
+            <span class="label">🪐 加入日期:</span>
+            <span class="value">{{ viewingUser.joinDate }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">📡 信号发射数:</span>
+            <span class="value">{{ viewingUser.commentCount }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">⭐ 引力波收集:</span>
+            <span class="value">{{ viewingUser.likeCount }}</span>
+          </div>
+        </div>
+
+        <div class="user-bio cosmic-text">
+          {{ viewingUser.bio }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cosmic-button cosmic-primary" @click="sendMessage(viewingUser.userId)">
+          📡 发送星际私信
+        </button>
+        <button
+            @click="sendRequest(viewingUser.userId)"
+            class="add-btn"
+            :disabled="sendingTo === viewingUser.userId"
+          >
+            <span v-if="sendingTo === viewingUser.userId">发送中...</span>
+            <span v-else>+ 添加好友</span>
+          </button>
+      </div>
+    </div>
+  </div>
+  <Teleport to="body">
+      <div v-if="showRequestDialog" class="dialog-overlay" @click.self="closeDialog">
+        <div class="dialog-content">
+          <h3>发送好友请求</h3>
+          <div class="dialog-body">
+            <p>向 <strong>星际旅客#{{ selectedUserId }}</strong> 发送好友请求</p>
+            <div class="form-group">
+              <label>选择来源：</label>
+              <select v-model="requestForm.source" class="form-select">
+                <option :value="1">搜索添加</option>
+                <option :value="2">同星系成员</option>
+                <option :value="3">评论互动</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>留言（选填）：</label>
+              <textarea
+                v-model="requestForm.requestMessage"
+                placeholder="介绍一下自己..."
+                class="form-textarea"
+                maxlength="200"
+              ></textarea>
+            </div>
+          </div>
+          <div class="dialog-footer">
+            <button @click="closeDialog" class="btn-cancel">取消</button>
+            <button @click="confirmRequest" class="btn-confirm">发送请求</button>
+          </div>
+        </div>
+      </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import { useCommentStore } from '@/stores/comment';
 import { usePlanetStore } from '@/stores/planetStore';
 import type { PlanetCommentDto } from '@/types/comment';
 import { useUserStore } from '@/stores/user';
-
+import { useFriendStore } from '@/stores/friend';
+const friendStore = useFriendStore()
 const commentStore = useCommentStore();
 const planetStore = usePlanetStore();
 const userStore = useUserStore();
@@ -134,6 +220,18 @@ const activeReplyId = ref<number | null>(null);
 const isSubmitting = ref(false);
 const sortOrder = ref<'newest' | 'popular'>('newest');
 const commentsLoading = ref(true);
+const sendingTo = ref<number | null>(null)
+// 响应式变量用于用户信息弹窗
+const showUserModal = ref(false);
+const viewingUser = ref<any>(null);
+const selectedUserId = ref<number | null>(null)
+const showRequestDialog = ref(false)
+
+const requestForm = reactive({
+  source: 1,
+  sourceId: '',
+  requestMessage: ''
+})
 
 // 计算属性
 const commentCount = computed(() => {
@@ -166,6 +264,9 @@ const sortedComments = computed(() => {
     });
   }
 });
+
+
+
 
 // 获取回复列表的方法
 const getRepliesByCommentId = (commentId: number) => {
@@ -325,6 +426,76 @@ const toggleCommentDetail = async (comment: PlanetCommentDto) => {
   }
 };
 
+const viewUserInfo = (userId: number) => {
+  // 实际项目中这里会调用API获取用户详细信息
+  // 例如：userStore.fetchUserDetails(userId)
+  console.log("查看用户",userId)
+  // 临时实现：显示用户信息弹窗
+  showUserDetailModal(userId);
+};
+
+// 显示用户信息弹窗
+const showUserDetailModal = (userId: number) => {
+  // 这里可以获取用户详细信息（实际项目中从store或API获取）
+  const userInfo = {
+    userId,
+    username: `星际旅人#${userId}`,
+    avatar: '👽', // 实际项目中应使用真实头像URL
+    joinDate: '2025-01-01',
+    bio: '这位神秘的宇宙探索者还没有留下个人简介',
+    commentCount: Math.floor(Math.random() * 100),
+    likeCount: Math.floor(Math.random() * 500)
+  };
+
+  // 设置当前查看的用户信息
+  viewingUser.value = userInfo;
+  // 显示弹窗
+  showUserModal.value = true;
+};
+
+const sendMessage = (userId: number) => {
+  alert(`准备向星际旅人#${userId}发送私信...`);
+  showUserModal.value = false;
+};
+
+const sendRequest = (userId: number) => {
+  selectedUserId.value = userId
+  showRequestDialog.value = true
+  showUserModal.value = false
+}
+
+const closeDialog = () => {
+  showRequestDialog.value = false
+  requestForm.requestMessage = ''
+  requestForm.source = 1
+}
+
+const confirmRequest = async () => {
+  if (!selectedUserId.value) return
+
+  try {
+    sendingTo.value = selectedUserId.value
+    await friendStore.sendFriendRequest({
+      friendUserId: selectedUserId.value,
+      source: requestForm.source,
+      sourceId: requestForm.sourceId,
+      requestMessage: requestForm.requestMessage
+    })
+
+    alert('好友请求已发送')
+    closeDialog()
+
+    // 从搜索结果中移除
+    friendStore.searchResults = friendStore.searchResults.filter(
+      u => u.userId !== selectedUserId.value
+    )
+  } catch (error) {
+    alert('发送失败')
+    console.log(error)
+  } finally {
+    sendingTo.value = null
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -459,13 +630,13 @@ const toggleCommentDetail = async (comment: PlanetCommentDto) => {
 
   .username {
     font-weight: 600;
-    color: #333;
+
   }
 
   .timestamp {
     display: block;
     font-size: 0.85rem;
-    color: #777;
+
   }
 }
 
@@ -482,16 +653,13 @@ const toggleCommentDetail = async (comment: PlanetCommentDto) => {
   button {
     background: none;
     border: none;
-    color: #666;
+
     cursor: pointer;
     font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 5px;
 
-    &:hover {
-      color: #333;
-    }
   }
 }
 
@@ -837,5 +1005,282 @@ const toggleCommentDetail = async (comment: PlanetCommentDto) => {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 15px;
+}
+
+.cosmic-avatar, .cosmic-username {
+  cursor: pointer;
+  transition: transform 0.3s;
+
+  &:hover {
+    transform: scale(1.1);
+    text-shadow: 0 0 5px rgba(0, 238, 255, 0.7);
+  }
+}
+
+.user-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 30, 0.8);
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    position: relative;
+    z-index: 1001;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 12px;
+    padding: 20px;
+    background: radial-gradient(circle at top, #0c2342, #0a1a2a);
+    border: 1px solid #00eeff;
+    box-shadow: 0 0 30px rgba(0, 195, 255, 0.5);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 238, 255, 0.3);
+
+    h3 {
+      color: #00eeff;
+      text-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+      margin: 0;
+    }
+
+    .close-btn {
+      padding: 8px 16px;
+      background: rgba(0, 201, 255, 0.2);
+      color: #e0f7fa;
+      border: 1px solid #00eeff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover {
+        background: rgba(0, 201, 255, 0.4);
+        box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+      }
+    }
+  }
+
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .user-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(0, 150, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      margin-bottom: 20px;
+      border: 2px solid #00eeff;
+    }
+
+    .user-details {
+      width: 100%;
+      margin-bottom: 20px;
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: rgba(8, 25, 48, 0.4);
+        border-radius: 6px;
+
+        .label {
+          color: #80deea;
+          font-weight: bold;
+        }
+
+        .value {
+          color: #00eeff;
+        }
+      }
+    }
+
+    .user-bio {
+      width: 100%;
+      padding: 15px;
+      background: rgba(8, 25, 48, 0.4);
+      border-radius: 6px;
+      font-style: italic;
+      color: #b2ebf2;
+      text-align: center;
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+
+    button {
+      padding: 12px 24px;
+      font-size: 1.1rem;
+
+      color: #0a0f2b;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 238, 255, 0.4);
+      }
+    }
+  }
+}
+
+/* 对话框 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.dialog-content {
+  background: #0a0e2d;
+  border: 1px solid #4a4a8a;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  padding: 2rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-content h3 {
+  color: #f0f0ff;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.dialog-body {
+  margin-bottom: 2rem;
+}
+
+.dialog-body p {
+  color: #a0a0ff;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  color: #90e0ef;
+  margin-bottom: 0.5rem;
+}
+
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(10, 15, 35, 0.8);
+  border: 1px solid #4a4a8a;
+  border-radius: 8px;
+  color: #f0f0ff;
+  font-size: 1rem;
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.dialog-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-confirm {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: rgba(160, 174, 192, 0.2);
+  color: #a0aec0;
+  border: 1px solid #a0aec0;
+}
+
+.btn-confirm {
+  background: linear-gradient(to right, #00b4d8, #0077b6);
+  color: white;
+}
+
+.btn-cancel:hover,
+.btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #a0a0ff;
+}
+
+.add-btn {
+  width: 40%;
+  padding: 0.6rem;
+  background: linear-gradient(to right, #00ff88, #00cc66);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 30px;
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+.add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>
