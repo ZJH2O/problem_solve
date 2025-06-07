@@ -364,6 +364,7 @@ watch(currentGalaxyId, (newId) => {
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   transition: all 0.3s ease;
+  margin-left: -2px;
 }
 .cosmic-btn {
   background: rgba(25, 30, 70, 0.6);

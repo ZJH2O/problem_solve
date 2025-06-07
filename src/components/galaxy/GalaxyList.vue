@@ -61,7 +61,7 @@
               <span>创建者: {{ galaxy.userId}}</span>
             </div>
             <div class="meta-item">
-              <span>{{ galaxy.planets ? galaxy.planets.length : 0 }} 个知识星球</span>
+              <span>{{ galaxy.planetCount || 0 }} 个知识星球</span>
             </div>
           </div>
         </div>

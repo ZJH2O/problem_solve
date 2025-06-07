@@ -26,6 +26,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
         const res = await service.get<ResponseMessage<KnowledgeGalaxyDto[]>>('/user/loadinggalaxies')
         if (res.data.code === 200) {
           this.galaxies = res.data.data || []
+          console.log("星系列表：",res.data.data)
           return true
         }
         throw new Error(res.data.message || '加载星系列表失败')
