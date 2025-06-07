@@ -2,10 +2,12 @@
   <div>
     <GalaxyControl />
     <GalaxyPlanets />
+    <GalaxyAdminControl />
   </div>
 </template>
 
 <script setup lang="ts">
+import GalaxyAdminControl from '@/components/galaxy/GalaxyAdminControl.vue';
 import GalaxyControl from '@/components/galaxy/GalaxyControl.vue';
 import GalaxyPlanets from '@/components/galaxy/GalaxyPlanets.vue';
 import { useGalaxyStore } from '@/stores/galaxy';

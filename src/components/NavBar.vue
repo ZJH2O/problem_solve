@@ -149,7 +149,12 @@ $star-yellow: #FFD700;
       text-shadow: 0 0 10px rgba($star-yellow, 0.5);
       margin: 0;
     }
+    .title:hover{
+      background-color: #03a8f400;
+    }
   }
+
+
 
   .nav-links {
     display: flex;
@@ -199,7 +204,6 @@ $star-yellow: #FFD700;
       }
     }
   }
-
   .user-actions {
     position: relative;
     display: flex;

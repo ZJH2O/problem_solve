@@ -111,6 +111,7 @@ const deletePlanet = async (planet:KnowledgePlanetDto) => {
       galaxyId: galaxyId.value,
       planetId: planet.planetId
     })
+    await galaxyStore.initPlanets(galaxyId.value)
     alert('移除成功！')
   } catch (error) {
     alert(error instanceof Error ? error.message : '未知错误')

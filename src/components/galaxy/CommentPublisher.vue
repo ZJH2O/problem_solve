@@ -114,7 +114,7 @@ defineExpose({ setReplyTarget })
 <style scoped>
 /* 宇宙背景 */
 .quantum-transmitter {
-  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f9e 100%);
 
   border-radius: 12px;
   padding: 1.5rem;
