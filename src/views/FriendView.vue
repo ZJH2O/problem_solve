@@ -40,7 +40,8 @@ import { useFriendStore } from '@/stores/friend'
 import FriendList from '@/components/friend/FriendList.vue'
 import PendingRequests from '@/components/friend/PendingRequests.vue'
 import AddFriend from '@/components/friend/AddFriend.vue'
-
+import { useUserStore } from '@/stores/user'
+const userStore = useUserStore()
 const friendStore = useFriendStore()
 const activeTab = ref('friends')
 
@@ -52,6 +53,7 @@ const tabs = computed(() => [
 
 onMounted(async () => {
   // 初始化数据
+  await userStore.init()
   await Promise.all([
     friendStore.fetchFriendList(),
     friendStore.fetchPendingRequests()

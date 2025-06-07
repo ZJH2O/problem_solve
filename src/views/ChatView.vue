@@ -517,7 +517,8 @@ onMounted(async () => {
   })
 })
 
-onUnmounted(() => {
+onUnmounted(async() => {
+  await userStore.init()
   // 清理
   chatStore.clearCurrentChat()
 })

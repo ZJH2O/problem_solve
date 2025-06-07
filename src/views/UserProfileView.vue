@@ -6,8 +6,13 @@
 
 <script setup lang="ts">
 import UserManage from '@/components/UserManage.vue';
+import { useUserStore } from '@/stores/user';
+import { onUnmounted } from 'vue';
+const userStore = useUserStore()
+onUnmounted(async() => {
+  await userStore.init()
 
-
+})
 </script>
 
 

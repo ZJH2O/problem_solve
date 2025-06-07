@@ -1,7 +1,7 @@
 <template>
   <div class="quantum-transmitter cosmic-bg">
     <!-- 粒子背景 -->
-    <div class="cosmic-particles"></div>
+
 
     <!-- 发射器状态 -->
     <div class="transmitter-status">
@@ -114,11 +114,8 @@ defineExpose({ setReplyTarget })
 <style scoped>
 /* 宇宙背景 */
 .quantum-transmitter {
-  background: radial-gradient(ellipse at center,
-    #0c1a2dbe 0%,
-    #090e1ab1 70%,
-    #05081177 100%);
-  border: 1px solid rgba(64, 158, 255, 0.2);
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+
   border-radius: 12px;
   padding: 1.5rem;
   position: relative;

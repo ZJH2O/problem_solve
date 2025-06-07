@@ -125,10 +125,11 @@ import { useNotificationStore } from '@/stores/notification'
 import NotificationItem from '@/components/notification/NotificationItem.vue'
 import webSocketService from '@/services/websocket'
 import { ElMessageBox } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 const notificationStore = useNotificationStore()
 const wsConnected = ref(false)
-
+const userStore = useUserStore()
 // 通知类型配置
 const notificationTypes = [
   { value: 1, label: '评论回复', icon: '💬' },
@@ -213,6 +214,7 @@ const loadMore = () => {
 
 // 生命周期
 onMounted(async () => {
+  await userStore.init()
   // 加载通知列表
   await notificationStore.fetchNotifications({ page: 1 })
 
@@ -233,7 +235,8 @@ onMounted(async () => {
   })
 })
 
-onUnmounted(() => {
+onUnmounted(async() => {
+
   // 断开WebSocket连接
   webSocketService.disconnect()
 })
