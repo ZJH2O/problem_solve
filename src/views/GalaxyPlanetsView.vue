@@ -23,6 +23,7 @@ onMounted(async () => {
     await userStore.init()
     await planetStore.init()
     await galaxyStore.initPlanets(galaxyId)
+    await galaxyStore.initGalaxyInfo(galaxyId)
     console.log('当前用户:', userStore.userInfo)
   } catch (error) {
     console.error('应用初始化失败:', error)

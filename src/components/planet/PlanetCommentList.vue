@@ -96,7 +96,7 @@
               class="reply-item cosmic-response"
             >
             <div class="reply-author">
-              <span class="username cosmic-username" @click="viewUserInfo(comment.userId)">👾 回应者#{{ reply.userId }}</span>
+              <span class="username cosmic-username" @click="viewUserInfo(reply.userId)">👾 回应者#{{ reply.userId }}</span>
             </div>
             <div class="reply-content cosmic-text">
               {{ reply.content }}
@@ -128,23 +128,23 @@
 
       <div class="modal-body">
         <div class="user-avatar cosmic-avatar-large">
-          {{ viewingUser.avatar }}
+          {{ viewingUser.avatarUrl }}
         </div>
 
         <div class="user-details">
           <div class="detail-item">
-            <span class="label">🪐 加入日期:</span>
-            <span class="value">{{ viewingUser.joinDate }}</span>
+            <span class="label">📡 星际代号:</span>
+            <span class="value">{{ viewingUser.nickname}}</span>
           </div>
 
           <div class="detail-item">
-            <span class="label">📡 信号发射数:</span>
-            <span class="value">{{ viewingUser.commentCount }}</span>
+            <span class="label">⭐ 加入日期:</span>
+            <span class="value">{{ formatDateTime(viewingUser.createTime) }}</span>
           </div>
 
           <div class="detail-item">
-            <span class="label">⭐ 引力波收集:</span>
-            <span class="value">{{ viewingUser.likeCount }}</span>
+            <span class="label">🪐 星际邮箱:</span>
+            <span class="value">{{ viewingUser.email }}</span>
           </div>
         </div>
 
@@ -153,8 +153,11 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="cosmic-button cosmic-primary" @click="sendMessage(viewingUser.userId)">
+      <div class="modal-footer " v-if="userStore.userInfo.userId!== viewingUser.userId">
+        <button
+          class="cosmic-button cosmic-primary"
+
+          @click="sendMessage(viewingUser.userId)">
           📡 发送星际私信
         </button>
         <button
@@ -208,6 +211,8 @@ import { usePlanetStore } from '@/stores/planetStore';
 import type { PlanetCommentDto } from '@/types/comment';
 import { useUserStore } from '@/stores/user';
 import { useFriendStore } from '@/stores/friend';
+import type { UserBrief, viewUser } from '@/types/user';
+import router from '@/router';
 const friendStore = useFriendStore()
 const commentStore = useCommentStore();
 const planetStore = usePlanetStore();
@@ -223,7 +228,7 @@ const commentsLoading = ref(true);
 const sendingTo = ref<number | null>(null)
 // 响应式变量用于用户信息弹窗
 const showUserModal = ref(false);
-const viewingUser = ref<any>(null);
+const viewingUser = ref<UserBrief>(null);
 const selectedUserId = ref<number | null>(null)
 const showRequestDialog = ref(false)
 
@@ -435,18 +440,19 @@ const viewUserInfo = (userId: number) => {
 };
 
 // 显示用户信息弹窗
-const showUserDetailModal = (userId: number) => {
+const showUserDetailModal = async(userId: number) => {
   // 这里可以获取用户详细信息（实际项目中从store或API获取）
-  const userInfo = {
-    userId,
-    username: `星际旅人#${userId}`,
-    avatar: '👽', // 实际项目中应使用真实头像URL
-    joinDate: '2025-01-01',
-    bio: '这位神秘的宇宙探索者还没有留下个人简介',
-    commentCount: Math.floor(Math.random() * 100),
-    likeCount: Math.floor(Math.random() * 500)
-  };
 
+  const userInfo:UserBrief = await userStore.ClickUserInfo(userId)
+  // const userInfo = {
+  //   userId,
+  //   username: `星际旅人#${userId}`,
+  //   avatar: '👽', // 实际项目中应使用真实头像URL
+  //   joinDate: '2025-01-01',
+  //   bio: '这位神秘的宇宙探索者还没有留下个人简介',
+  //   commentCount: Math.floor(Math.random() * 100),
+  //   likeCount: Math.floor(Math.random() * 500)
+  // };
   // 设置当前查看的用户信息
   viewingUser.value = userInfo;
   // 显示弹窗
@@ -454,7 +460,10 @@ const showUserDetailModal = (userId: number) => {
 };
 
 const sendMessage = (userId: number) => {
-  alert(`准备向星际旅人#${userId}发送私信...`);
+  router.push({
+    name: 'FriendChat',
+    params: { friendId: userId }
+  })
   showUserModal.value = false;
 };
 

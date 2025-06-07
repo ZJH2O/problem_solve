@@ -46,6 +46,21 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
         throw new Error(`加载星系星球失败: ${error}`)
       }
     },
+    async initGalaxyInfo(galaxyId:string){
+      try{
+        const res = await service.get<ResponseMessage<KnowledgeGalaxyDto>>(
+          `/galaxy/${galaxyId}/info`
+        )
+        if(res.data.code === 200){
+          this.currentGalaxy = res.data.data
+          console.log("当前星系",res.data.data)
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`加载星系星球失败: ${error}`)
+      }
+
+    },
     // 创建星系
     async createGalaxy(data:{
       userId: number

@@ -90,8 +90,8 @@ const deletePlanet = async (planet:KnowledgePlanetDto) => {
 
   try {
     await galaxyStore.removePlanetFromGalaxy({
-      galaxyId: galaxyStore.currentGalaxy?.galaxyId || '-1',
-      planetId: planet.planetId || '-1'
+      galaxyId: galaxyId.value,
+      planetId: planet.planetId
     })
     alert('移除成功！')
   } catch (error) {

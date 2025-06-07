@@ -14,7 +14,7 @@ export interface UserBrief {
   bio?: string
   createdPlanets?: string[]
   mobile?:string
-  createdAt?: string
+  createTime?: string
   favoritePlanetId?: string
   favorite_galaxy_id?: number
   reward?: Reward

@@ -1,6 +1,6 @@
 // 星系基础类型
 export interface KnowledgeGalaxyDto {
-  galaxyId?: string
+  galaxyId: string
   userId: number
   name: string
   label: string

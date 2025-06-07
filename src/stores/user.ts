@@ -259,10 +259,11 @@ export const useUserStore = defineStore('user', {
     },
     async ClickUserInfo(userId:number){
       try{
-        const res = await service.get<ResponseMessage<viewUser>>(
+        const res = await service.get<ResponseMessage<UserBrief>>(
           `/user/getuserinfo/${userId}`
         )
         if(res.data.code === 200){
+          console.log("点击用户信息",res.data.data)
           return res.data.data
         }
       }catch(error){
