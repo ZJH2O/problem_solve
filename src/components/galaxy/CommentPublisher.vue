@@ -115,9 +115,9 @@ defineExpose({ setReplyTarget })
 /* 宇宙背景 */
 .quantum-transmitter {
   background: radial-gradient(ellipse at center,
-    #0c1a2d 0%,
-    #090e1a 70%,
-    #050811 100%);
+    #0c1a2dbe 0%,
+    #090e1ab1 70%,
+    #05081177 100%);
   border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 12px;
   padding: 1.5rem;
@@ -168,7 +168,7 @@ defineExpose({ setReplyTarget })
 .quantum-field {
   position: relative;
   margin-bottom: 1.5rem;
-  background: rgba(10, 25, 47, 0.7);
+  background: rgba(10, 25, 47, 0.557);
   border: 1px solid rgba(79, 195, 247, 0.3);
   border-radius: 8px;
   overflow: hidden;

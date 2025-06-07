@@ -16,7 +16,7 @@
       <!-- 头像改为种族标识 -->
       <div class="alien-avatar">
         <svg class="energy-core">
-          <circle cx="50%" cy="50%" r="40%" fill="#00f7ff" />
+          <circle cx="50%" cy="40%" r="40%" fill="#00f7ff" />
           <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
         </svg>
         <span class="species-tag">碳基生物{{comment.userId}}</span>
@@ -49,13 +49,6 @@
           >
             <span class="energy-pulse"></span>
             📡 量子回复
-          </button>
-          <button
-            @click="toggleDetails(comment)"
-            class="plasma-button details-btn"
-          >
-            <span class="energy-pulse"></span>
-            🔍 星际详情
           </button>
 
         </div>
@@ -103,7 +96,7 @@
       </div>
 
       <!-- 详情面板 -->
-      <div v-if="activeDetailsId === comment.galaxyCommentId" class="details-panel">
+      <!-- <div v-if="activeDetailsId === comment.galaxyCommentId" class="details-panel">
         <div class="detail-header">
           <h4>🛸 评论详情 - 星际编号 #{{comment.galaxyCommentId}}</h4>
           <button @click="activeDetailsId = null" class="close-details">×</button>
@@ -145,7 +138,7 @@
             🚫 该评论尚未收到任何量子回复
           </div>
         </div>
-      </div>
+      </div> -->
 
 
 
@@ -286,32 +279,22 @@ const submitReply = async (comment: GalaxyCommentDto) => {
   }
 
   try {
-    // 模拟添加回复
-    // const newReply: GalaxyCommentDto = {
-    //   galaxyCommentId: Math.floor(Math.random() * 1000000),
-    //   userId: props.userId,
-    //   galaxyId: parseInt(props.galaxyId),
-    //   content: replyContent.value,
-    //   likeCount: 0,
-    //   createTime: new Date().toISOString(),
-    //   humorRating: Math.floor(Math.random() * 5) + 1
-    // };
-
     // 添加到回复列表
     if (!comment.replies) {
       comment.replies = [];
     }
+    // 1. 先保存要发送的内容
+    const contentToSend = replyContent.value;
 
-
-    // 清空回复框
+    // 2. 立即清空UI
     replyContent.value = '';
     activeReplyId.value = null;
 
     // 这里应该是实际的API调用
-
+    console.log("评论内容",comment.content)
     await commentStore.publishComment({
       parentId: comment.galaxyCommentId,
-      content: replyContent.value,
+      content: contentToSend,
       galaxyId: props.galaxyId,
       userId: props.userId
     });
@@ -535,7 +518,7 @@ const submitReply = async (comment: GalaxyCommentDto) => {
 .species-tag {
   font-size: 0.7rem;
   color: #7d9bff;
-  margin-top: 5px;
+  margin-top: -50px;
 }
 
 .quantum-bubble {
@@ -631,17 +614,17 @@ const submitReply = async (comment: GalaxyCommentDto) => {
 }
 
 .plasma-button.ionized {
-  background: linear-gradient(45deg, #ff00cc, #ff5555);
+  background: linear-gradient(45deg, #ff00cc30, #ff555546);
   border-color: #ff55ff;
 }
 
 .reply-btn {
-  background: linear-gradient(45deg, #6600cc, #9900ff);
+  background: linear-gradient(45deg, #6600cc5d, #9900ff2d);
   border-color: #cc55ff;
 }
 
 .details-btn {
-  background: linear-gradient(45deg, #00cc66, #00ff99);
+  background: linear-gradient(45deg, #00cc662c, #00ff9929);
   border-color: #55ffaa;
 }
 
@@ -686,7 +669,7 @@ const submitReply = async (comment: GalaxyCommentDto) => {
 }
 
 .submit-reply {
-  background: linear-gradient(45deg, #cc00ff, #ff00cc);
+  background: linear-gradient(45deg, #cc00ff58, #ff00cc2e);
   border-color: #ff55ff;
 }
 
@@ -722,7 +705,7 @@ const submitReply = async (comment: GalaxyCommentDto) => {
 .reply-user {
   display: block;
   font-size: 0.8rem;
-  color: #ff55ff;
+  color: #ff55ff4c;
   margin-bottom: 3px;
 }
 
