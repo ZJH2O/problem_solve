@@ -32,9 +32,13 @@
       </div>
 
       <!-- 无结果提示 -->
-      <div v-if="filteredPlanets.length === 0" class="no-results">
+      <div v-if="filteredPlanets.length === 0 && planets.length !== 0" class="no-results">
         <p>未找到匹配的星球</p>
         <button @click="resetSearch">显示全部星球</button>
+      </div>
+      <div v-if="planets.length === 0" class="no-results">
+      <p>此星系中不存在星球</p>
+      <p>请通过行星控制台添加</p>
       </div>
 
       <div
