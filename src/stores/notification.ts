@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { NotificationDto, UnreadCount, ResponseMessage, MessageDto } from '@/types/notification'
+import type { NotificationDto, UnreadCount, ResponseMessage } from '@/types/notification'
 import service from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
@@ -43,13 +43,14 @@ export const useNotificationStore = defineStore('notification', {
     // 获取通知类型的图标和颜色
     getTypeInfo: () => (type: number) => {
       const typeMap = {
-        1: { icon: '💬', color: '#00b4d8', name: '评论回复' },
-        2: { icon: '👍', color: '#ff6b6b', name: '评论点赞' },
-        3: { icon: '📝', color: '#4ecdc4', name: '新评论' },
-        4: { icon: '💬', color: '#00b4d8', name: '评论回复' },
-        5: { icon: '👍', color: '#ff6b6b', name: '评论点赞' },
-        6: { icon: '📝', color: '#4ecdc4', name: '新评论' },
-        7: { icon: '📢', color: '#9d4edd', name: '系统通知' }
+        1: { icon: '💬', color: '#00b4d8', name: '星系评论回复' },
+        2: { icon: '👍', color: '#ff6b6b', name: '星系评论点赞' },
+        3: { icon: '📝', color: '#4ecdc4', name: '星系新评论' },
+        4: { icon: '💬', color: '#00b4d8', name: '星球评论回复' },
+        5: { icon: '👍', color: '#ff6b6b', name: '星球评论点赞' },
+        6: { icon: '📝', color: '#4ecdc4', name: '星球新评论' },
+        7: { icon: '📢', color: '#9d4edd', name: '系统通知' },
+        8: { icon: '📝', color: '#4ecdc4', name: '星系管理员任命通知' }
       }
       return typeMap[type] || { icon: '📌', color: '#666', name: '其他' }
     }
@@ -312,30 +313,6 @@ export const useNotificationStore = defineStore('notification', {
       await this.fetchNotifications({
         page: this.currentPage + 1
       })
-    },
-
-
-    async sendMessage(message:MessageDto){
-      try{
-        const res = await service.post<ResponseMessage<string>>(
-          '/notification/send',
-          null, // 请求体为空
-          {
-            params: {
-              userId: message.userId,
-              receiverId: message.receiverId,
-              content: message.content,
-              Type: message.type || 7 // 默认类型7
-            }
-          }
-        )
-        if(res.data.code === 200){
-          console.log(res.data.data)
-          return res.data.data
-        }
-      }catch(error){
-        throw new Error(`信息发送失败:${error}`)
-      }
-    },
+    }
   }
 })
