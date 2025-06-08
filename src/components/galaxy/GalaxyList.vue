@@ -41,6 +41,9 @@
         <button class="delete-btn" @click.stop="confirmDeleteGalaxy(galaxy)" v-if="userStore.userInfo.userId==galaxy.userId">
           ×
         </button>
+        <button class="delete-btn" @click.stop="confirmRevokeGalaxy(galaxy)" v-else>
+          -
+        </button>
 
         <div class="card-header">
           <div class="galaxy-icon">
@@ -70,7 +73,7 @@
           <button class="action-btn explore" @click.stop="exploreGalaxy(galaxy)">
             探索星系
           </button>
-          <button class="action-btn share" @click.stop="shareGalaxy(galaxy)">
+          <button class="action-btn share" @click.stop="shareGalaxy(galaxy)" v-if="userStore.userInfo.userId==galaxy.userId">
             分享
           </button>
         </div>
@@ -165,6 +168,7 @@ import type { FriendDto } from '@/types/friend';
 import { useUserStore } from '@/stores/user';
 import { useNotificationStore } from '@/stores/notification';
 import type { MessageDto } from '@/types/notification';
+import { useGalaxyAdminStore } from '@/stores/galaxyAdmin';
 const galaxyStore = useGalaxyStore();
 const searchTerm = ref('');
 const friendStore = useFriendStore();
@@ -174,6 +178,7 @@ const friendSearchKeyword = ref('');
 const friends = ref<FriendDto[]>([]);
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
+const galaxyAdminStore = useGalaxyAdminStore()
 // 初始化星系数据
 onMounted(async () => {
       await galaxyStore.init();
@@ -241,7 +246,7 @@ onMounted(async () => {
         userId:userStore.userInfo.userId,
         receiverId:friendUserId,
         type:8,
-        content: `我想与您分享一个星系，邀请码：${shareGalaxyData.value?.inviteCode}。`
+        content: `我想与您分享一个星系:${shareGalaxyData.value?.name}，邀请码：${shareGalaxyData.value?.inviteCode}。`
       }
 
       await notificationStore.sendMessage(params)
@@ -271,6 +276,31 @@ const deleteGalaxy = async (galaxyId: string) => {
     await galaxyStore.deleteGalaxy(galaxyId);
     // 可选：显示成功消息
     alert(`星系已成功删除`);
+  } catch (error) {
+    console.error('删除星系失败:', error);
+    alert(`删除失败: ${error.message || '请重试'}`);
+  }
+};
+
+
+const confirmRevokeGalaxy = (galaxy: KnowledgeGalaxyDto) => {
+  if (!galaxy.galaxyId) return;
+
+  // 使用浏览器原生确认对话框
+  if (confirm(`确定要离开星系 "${galaxy.name}" 吗？此操作不可撤销！`)) {
+    RevokeGalaxy(galaxy.galaxyId);
+  }
+};
+
+// 新增：执行删除操作
+const RevokeGalaxy = async (galaxyId: string) => {
+  try {
+    await galaxyAdminStore.revokeAdmin({
+      galaxyId:galaxyId,
+      userId:userStore.userInfo.userId
+    });
+    // 可选：显示成功消息
+    alert(`星系管理员已成功移除`);
   } catch (error) {
     console.error('删除星系失败:', error);
     alert(`删除失败: ${error.message || '请重试'}`);

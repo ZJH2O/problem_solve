@@ -230,6 +230,8 @@ const handleLike = (comment: GalaxyCommentDto) => {
     comment.isLiked = !comment.isLiked;
     console.error('点赞失败:', error)
   })
+
+
 }
 
 function formatDateTime(isoString:string) {

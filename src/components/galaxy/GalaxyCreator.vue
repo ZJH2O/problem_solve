@@ -174,7 +174,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useGalaxyStore } from '@/stores/galaxy'
 import type { KnowledgeGalaxyDto } from '@/types/galaxy'
 import { useUserStore } from '@/stores/user'
-
+import { useGalaxyAdminStore } from '@/stores/galaxyAdmin'
+const galaxyAdminStore = useGalaxyAdminStore()
 const galaxyStore = useGalaxyStore()
 const userStore = useUserStore()
 const activeMode = ref('create') // 'create' 或 'join'
@@ -229,6 +230,10 @@ const joinGalaxy = async () => {
   if (!inviteCode.value) return
 
   isJoining.value = true
+  if (!userStore.userInfo?.userId) {
+    alert('请先登录')
+    return
+  }
 
   try {
     // 验证邀请码格式 (8位字母数字)
@@ -237,9 +242,10 @@ const joinGalaxy = async () => {
       throw new Error('邀请码格式不正确，请输入8位字母数字组合')
     }
     console.log("已加入星系",inviteCode.value)
-    // 调用加入星系API
-    // const result = await galaxyStore.joinGalaxy(inviteCode.value)
-    // alert(`成功加入星系：${result.galaxyName}`)
+    //调用加入星系API
+    await galaxyAdminStore.joinGalaxy(inviteCode.value)
+    await galaxyStore.init()
+    alert(`成功加入星系`)
     handleClose()
   } catch (error) {
     console.error('加入星系失败:', error)

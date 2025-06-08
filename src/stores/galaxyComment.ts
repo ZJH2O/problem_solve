@@ -7,6 +7,9 @@ import type {
   ResponseMessage
 } from '@/types/galaxyComment'
 import service from '@/utils/request'
+import { useNotificationStore } from './notification'
+
+const notifacationStore = useNotificationStore()
 
 export const useGalaxyCommentStore = defineStore('galaxyComment',{
   state: () => ({
@@ -109,6 +112,7 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
         if (response.data.code === 200) {
           // 更新本地数据
           console.log(response.data.data)
+
           return response.data.data
         }
         throw new Error(response.data.message)

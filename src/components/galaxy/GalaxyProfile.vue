@@ -84,7 +84,7 @@ const formatDate = (dateString?: string) => {
       <div class="galaxy-info">
         <div class="meta-grid">
           <div class="info-cell">
-            <span class="info-label">星域管理员</span>
+            <span class="info-label">星系创建者</span>
             <span class="info-value hologram-text">{{ galaxy.userId || '未知文明' }}</span>
           </div>
 

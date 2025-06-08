@@ -137,6 +137,7 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
             pageSize: size,
             total: response.data.data.total
           }
+          console.log("星系管理员列表获取成功")
           return this.currentAdmins
         }
         throw new Error(response.data.message || '获取管理员列表失败')
@@ -189,6 +190,38 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
       } finally {
         this.loading = false
       }
+    },
+
+    async joinGalaxy(inviteCode: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const userStore = useUserStore();
+        const currentUserId = userStore.userInfo?.userId;
+
+        if (!currentUserId) {
+          throw new Error('用户未登录');
+        }
+
+        const res = await service.put<ResponseMessage<string>>(
+          '/galaxy/admin/autoBecomeAdmin',
+          {
+            inviteCode,
+            userId: currentUserId  // 包含用户ID
+          }
+        );
+
+        if (res.data.code === 200) {
+          return res.data.data;
+        }
+        throw new Error(res.data.message || '加入失败');
+      } catch (error: any) {
+        this.error = error.message;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
     }
   },
 
@@ -212,11 +245,7 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
      */
     formattedAdmins(state) {
 
-      return state.currentAdmins.map(admin => {
-        return {
-          ...admin,
-        }
-      })
+      return this.currentAdmins
     }
   }
 })

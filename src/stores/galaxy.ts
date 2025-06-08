@@ -18,21 +18,44 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     currentGalaxy: null as KnowledgeGalaxyDto | null ,// 当前查看的星系
     showCreator: false ,// 是否显示创建星系的对话框
     galaxyPlanets: [] as KnowledgePlanetDto[], //星系里面的星球
+    managedGalaxies: [] as KnowledgeGalaxyDto[], // 用户管理的星系列表
   }),
 
   actions: {
     // 初始化星系列表
     async init() {
-      try{
-        const res = await service.get<ResponseMessage<KnowledgeGalaxyDto[]>>('/user/loadinggalaxies')
-        if (res.data.code === 200) {
-          this.galaxies = res.data.data || []
-          console.log("星系列表：",res.data.data)
-          return true
+      try {
+        // 并行获取普通星系和管理星系
+        const [galaxiesRes, managedRes] = await Promise.all([
+          service.get<ResponseMessage<KnowledgeGalaxyDto[]>>('/user/loadinggalaxies'),
+          this.getManageGalaxies() // 调用管理星系获取方法
+        ]);
+
+        // 处理普通星系
+        if (galaxiesRes.data.code === 200) {
+          this.galaxies = galaxiesRes.data.data || [];
+        } else {
+          throw new Error(galaxiesRes.data.message || '加载普通星系列表失败');
         }
-        throw new Error(res.data.message || '加载星系列表失败')
-      }catch (error) {
-        console.error('初始化星系列表失败:', error)
+
+        // 处理管理星系
+        if (Array.isArray(managedRes)) {
+          this.managedGalaxies = managedRes;
+
+          // 合并星系并去重（基于galaxyId）
+          const combinedGalaxies = [...this.galaxies, ...this.managedGalaxies];
+          const uniqueGalaxies = Array.from(new Map(
+            combinedGalaxies.map(galaxy => [galaxy.galaxyId, galaxy])
+          ).values());
+
+          this.galaxies = uniqueGalaxies;
+        }
+
+        console.log("合并后的星系列表：", this.galaxies);
+        return true;
+      } catch (error) {
+        console.error('初始化星系列表失败:', error);
+        throw error;
       }
     },
     async initPlanets(galaxyId:string){
@@ -142,7 +165,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     async deleteGalaxy(galaxyId: string) {
       try {
         const response = await service.delete<ResponseMessage<string>>(
-          `/galaxy/delete/${galaxyId}`
+          `/galaxy/delete?galaxyId=${galaxyId}`,
         )
 
         if (response.data.code === 200) {
@@ -303,6 +326,21 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
       }catch(error){
         throw new Error(`请求失败: ${error}`)
       }
+    },
+
+    async getManageGalaxies(){
+      try{
+        const res = await service.get<ResponseMessage<KnowledgeGalaxyDto[]>>(
+          '/galaxy/admin/managed',
+        )
+        if(res.data.code === 200){
+          console.log("管理星系列表",res.data.data)
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }
     }
+
   }
 })
