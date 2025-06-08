@@ -16,7 +16,9 @@ export const useNotificationStore = defineStore('notification', {
     pageSize: 20,
     hasMore: true,
     selectedType: null as number | null,
-    showUnreadOnly: false
+    showUnreadOnly: false,
+    totalPages: 1,       // 总页数
+    totalItems: 0,       // 总条目数
   }),
 
   getters: {
@@ -57,12 +59,29 @@ export const useNotificationStore = defineStore('notification', {
   },
 
   actions: {
+    // 设置当前页码
+    setPage(page: number) {
+      this.currentPage = page;
+    },
+
+    // 重置到第一页
+    resetPage() {
+      this.currentPage = 1;
+    },
+
+    // 更新分页信息
+    updatePagination(totalItems: number) {
+      this.totalItems = totalItems;
+      this.totalPages = Math.ceil(totalItems / this.pageSize);
+    },
+
     // 获取通知列表
     async fetchNotifications(params?: {
       type?: number
       isRead?: number
       page?: number
       size?: number
+      userId: number
     }) {
       try {
         this.isLoading = true
@@ -74,14 +93,14 @@ export const useNotificationStore = defineStore('notification', {
               type: params?.type || this.selectedType,
               isRead: params?.isRead,
               page: params?.page || this.currentPage,
-              size: params?.size || this.pageSize
+              size: params?.size || this.pageSize,
+              userId: params?.userId
             }
           }
         )
 
         if (response.data.code === 200) {
           const newNotifications = response.data.data || []
-
           if (params?.page === 1) {
             // 第一页，替换数据
             this.notifications = newNotifications
@@ -96,6 +115,7 @@ export const useNotificationStore = defineStore('notification', {
 
           return true
         }
+
         throw new Error(response.data.message)
       } catch (error: any) {
         this.error = error.message || '获取通知失败'

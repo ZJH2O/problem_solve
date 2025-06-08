@@ -31,7 +31,7 @@
       <!-- 筛选按钮 -->
       <div class="filter-buttons">
         <button
-          @click="notificationStore.setFilterType(null)"
+          @click="handleTypeClick(null)"
           :class="['filter-btn', { active: notificationStore.selectedType === null }]"
         >
           全部消息
@@ -39,7 +39,7 @@
         <button
           v-for="type in notificationTypes"
           :key="type.value"
-          @click="notificationStore.setFilterType(type.value)"
+          @click="handleTypeClick(type.value)"
           :class="['filter-btn', { active: notificationStore.selectedType === type.value }]"
         >
           <span>{{ type.icon }}</span>
@@ -96,7 +96,28 @@
             @delete="handleDelete"
           />
         </TransitionGroup>
+        <!-- 分页控件 -->
+        <div class="pagination-controls">
+          <button
+            @click="prevPage"
+            :disabled="notificationStore.currentPage === 1"
+            class="page-btn"
+          >
+            上一页
+          </button>
 
+          <span class="page-info">
+            第 {{ notificationStore.currentPage }} 页 / 共 {{ notificationStore.totalPages }} 页
+          </span>
+
+          <button
+            @click="nextPage"
+            :disabled="notificationStore.currentPage >= notificationStore.totalPages"
+            class="page-btn"
+          >
+            下一页
+          </button>
+        </div>
         <!-- 加载更多 -->
         <div v-if="notificationStore.hasMore" class="load-more">
           <button
@@ -193,6 +214,63 @@ const handleDelete = async (notification: any) => {
   }
 }
 
+// 在handleTypeClick方法中，添加分页重置逻辑
+const handleTypeClick = async (typeValue: number | null) => {
+  try {
+    // 设置当前选中的类型
+    notificationStore.setFilterType(typeValue)
+
+    // 重置到第一页
+    notificationStore.resetPage()
+
+    // 确保用户信息已初始化
+    await userStore.init()
+
+    if (!userStore.userInfo.userId) {
+      throw new Error("用户信息未初始化，无法获取通知")
+    }
+
+    // 加载对应类型的通知
+    await notificationStore.fetchNotifications({
+      page: notificationStore.currentPage,
+      size: notificationStore.pageSize,
+      userId: userStore.userInfo.userId,
+      type: typeValue
+    })
+
+  } catch (error) {
+    console.error("加载通知失败:", error)
+  }
+}
+
+
+// 分页导航方法
+const prevPage = async () => {
+  if (notificationStore.currentPage > 1) {
+    notificationStore.setPage(notificationStore.currentPage - 1)
+    await reloadNotifications()
+  }
+}
+
+const nextPage = async () => {
+  if (notificationStore.currentPage < notificationStore.totalPages) {
+    notificationStore.setPage(notificationStore.currentPage + 1)
+    await reloadNotifications()
+  }
+}
+
+// 重新加载通知
+const reloadNotifications = async () => {
+  await userStore.init()
+  if (!userStore.userInfo.userId) return
+
+  await notificationStore.fetchNotifications({
+    page: notificationStore.currentPage,
+    size: notificationStore.pageSize,
+    userId: userStore.userInfo.userId,
+    type: notificationStore.selectedType
+  })
+}
 // 全部标记为已读
 const markAllAsRead = async () => {
   try {
@@ -219,8 +297,16 @@ const loadMore = () => {
 // 生命周期
 onMounted(async () => {
   await userStore.init()
+  // 确保userStore已初始化且包含userId
+  if (!userStore.userInfo.userId) {
+      throw new Error("用户信息未初始化，无法获取通知");
+  }
   // 加载通知列表
-  await notificationStore.fetchNotifications({ page: 1 })
+  await notificationStore.fetchNotifications({
+    page: 1,
+    size: 5,
+    userId:userStore.userInfo.userId
+  })
 
   // 加载未读数量
   await notificationStore.fetchUnreadCount()
@@ -673,6 +759,55 @@ onUnmounted(async() => {
 
   .notifications-container {
     padding: 1rem;
+  }
+}
+
+/* 分页控件样式 */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  gap: 15px;
+}
+
+.page-btn {
+  padding: 8px 20px;
+  background: rgba(0, 180, 216, 0.2);
+  border: 1px solid #00b4d8;
+  border-radius: 20px;
+  color: #90e0ef;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: rgba(0, 180, 216, 0.4);
+  transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: #90e0ef;
+  font-size: 0.95rem;
+  font-family: 'Orbitron', monospace;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .page-btn {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
