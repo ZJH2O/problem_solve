@@ -81,7 +81,7 @@
             ></textarea>
             <div class="form-actions">
               <button @click="cancelReply" class="cancel-btn cosmic-button">🚫 取消</button>
-              <button @click="submitReply(comment.planetCommentId)" class="submit-btn cosmic-button cosmic-primary">✅ 发送</button>
+              <button @click="submitReply(comment)" class="submit-btn cosmic-button cosmic-primary">✅ 发送</button>
             </div>
           </div>
 
@@ -213,6 +213,8 @@ import { useUserStore } from '@/stores/user';
 import { useFriendStore } from '@/stores/friend';
 import type { UserBrief, viewUser } from '@/types/user';
 import router from '@/router';
+import type { MessageDto } from '@/types/notification';
+import { useNotificationStore } from '@/stores/notification';
 const friendStore = useFriendStore()
 const commentStore = useCommentStore();
 const planetStore = usePlanetStore();
@@ -231,6 +233,7 @@ const showUserModal = ref(false);
 const viewingUser = ref<UserBrief>(null);
 const selectedUserId = ref<number | null>(null)
 const showRequestDialog = ref(false)
+const notificationStore = useNotificationStore()
 
 const requestForm = reactive({
   source: 1,
@@ -321,17 +324,32 @@ const toggleLike = async (comment: PlanetCommentDto) => {
     alert('请先登录')
     return
   }
-  commentStore.currentComment = comment
-  commentStore.toggleLike({
-    userId: userId.value,
-    commentId: comment.planetCommentId
-  }).catch(error => {
-    // 操作失败时回滚状态
-    console.error('点赞失败:', error)
-  })
+  try{
+    commentStore.currentComment = comment
+    const data = await commentStore.toggleLike({
+      userId: userId.value,
+      commentId: comment.planetCommentId
+    })
+
+    if(data === "点赞成功"){
+      const message: MessageDto = {
+        userId: userStore.userInfo.userId,                     // 当前用户ID
+        receiverId: comment.userId,              // 评论作者ID
+        content: `星际旅客#${userStore.userInfo.userId}在星球#${planetStore.currentPlanet?.planetId}上点赞了你的评论`,                // 通知内容
+        type: 5                                  // 通知类型为2
+      }
+
+      // 发送通知（不需要等待结果）
+      notificationStore.sendMessage(message).catch(e => {
+        console.error('通知发送失败，但不影响点赞状态:', e)
+      })
+    }
+  }catch(error){
+    throw new Error(`点赞失败：${error}`)
+  }
 };
 
-// 提交新评论
+// 提交新评论（带通知功能）
 const submitComment = async () => {
   if (!newCommentContent.value.trim()) {
     alert('评论内容不能为空');
@@ -341,16 +359,36 @@ const submitComment = async () => {
   isSubmitting.value = true;
 
   try {
+    // 1. 保存评论内容（用于通知）
+    const commentContent = newCommentContent.value;
+
+    // 2. 提交评论到服务器
     await commentStore.createComment({
       userId: userId.value,
       planetId: planetId.value,
-      content: newCommentContent.value,
+      content: commentContent,
       parentId: 0 // 顶级评论
     });
 
-    // 刷新评论列表
+    // 3. 刷新评论列表
     await commentStore.listCommentsByPlanet(planetId.value);
+
+    // 4. 获取文章作者ID（根据实际项目实现）
+    const articleAuthorId = planetStore.currentPlanet?.userId
+
+    // 5. 发送类型6的通知（新评论通知）
+    if (userId.value !== articleAuthorId) {
+      await notificationStore.sendMessage({
+        userId: userId.value,
+        receiverId: articleAuthorId,
+        content: `星际旅客#${userId.value}在你的星球#${planetId.value}中评论: "${commentContent.substring(0, 30)}..."`,
+        type: 6 // 新评论通知类型
+      });
+    }
+
+    // 6. 清空输入框
     newCommentContent.value = '';
+
   } catch (error) {
     console.error('提交评论失败:', error);
     alert('提交评论失败，请重试');
@@ -359,23 +397,39 @@ const submitComment = async () => {
   }
 };
 
-// 提交回复
-const submitReply = async (parentId: number) => {
+
+// 提交回复（带通知功能）
+const submitReply = async (comment:PlanetCommentDto) => {
   if (!replyContent.value.trim()) {
     alert('回复内容不能为空');
     return;
   }
 
   try {
+    // 1. 提交回复
     await commentStore.createComment({
       userId: userId.value,
       planetId: planetId.value,
       content: replyContent.value,
-      parentId
+      parentId:comment.planetCommentId
     });
 
-    // 刷新评论列表
+    // 2. 刷新评论列表
     await commentStore.listCommentsByPlanet(planetId.value);
+
+    // 3. 查找被回复的原始评论（用于获取接收者ID
+
+
+      // 4. 发送类型4的通知（评论回复通知）
+      await notificationStore.sendMessage({
+        userId: userId.value,
+        receiverId: comment.userId, // 被回复的用户
+        content: `星际旅客#${userId.value}回复了你的评论"${comment.content.substring(0, 30)}...",他说: "${replyContent.value.substring(0, 30)}..."`, // 截取部分内容
+        type: 4 // 评论回复通知类型
+      });
+
+
+    // 5. 重置界面状态
     replyContent.value = '';
     activeReplyId.value = null;
   } catch (error) {

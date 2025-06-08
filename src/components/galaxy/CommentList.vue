@@ -169,6 +169,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useGalaxyCommentStore } from '@/stores/galaxyComment'
 import type { GalaxyCommentDto } from '@/types/galaxyComment';
+import { useNotificationStore } from '@/stores/notification';
+import type { MessageDto } from '@/types/notification';
 
 const props = defineProps<{
   galaxyId: string
@@ -183,7 +185,7 @@ const errorComments = ref<number[]>([]) // 存储无效评论ID
 const activeDetailsId = ref<number | null>(null)
 const replyContent = ref('')
 const showAllReplies = ref<Record<number, boolean>>({})
-
+const notificationStore = useNotificationStore()
 
 onMounted(() => loadComments())
 
@@ -205,35 +207,56 @@ const loadComments = async (page = 1) => {
 }
 
 // 增强版点赞处理
-const handleLike = (comment: GalaxyCommentDto) => {
+const handleLike = async (comment: GalaxyCommentDto) => {
   if (!comment.galaxyCommentId) {
     console.error('无效评论ID:', comment)
     return
   }
-  const oldCount = comment.likeCount;
-  comment.likeCount += comment.isLiked ? -1 : 1;
-  comment.isLiked = !comment.isLiked;
 
   if (!props.userId) {
     alert('请先登录')
     return
   }
 
+  // 记录原始状态用于回滚
+  const oldCount = comment.likeCount;
+  const oldIsLiked = comment.isLiked;
+
+  // 立即更新UI状态（乐观更新）
+  comment.likeCount += comment.isLiked ? -1 : 1;
+  comment.isLiked = !comment.isLiked;
+
   commentStore.currentComment = comment
 
-  commentStore.toggleLike({
-    userId: props.userId,
-    galaxyCommentId: comment.galaxyCommentId
-  }).catch(error => {
+  try {
+    // 执行点赞/取消点赞操作
+    const data = await commentStore.toggleLike({
+      userId: props.userId,
+      galaxyCommentId: comment.galaxyCommentId
+    })
+
+    // 如果是点赞操作（之前未点赞），发送通知
+    if (data === "点赞成功") {
+      // 构造消息内容
+      const message: MessageDto = {
+        userId: props.userId,                     // 当前用户ID
+        receiverId: comment.userId,              // 评论作者ID
+        content: `星际旅客#${props.userId}在#${props.galaxyId}星系中点赞了你的评论`,                // 通知内容
+        type: 2                                  // 通知类型为2
+      }
+
+      // 发送通知（不需要等待结果）
+      notificationStore.sendMessage(message).catch(e => {
+        console.error('通知发送失败，但不影响点赞状态:', e)
+      })
+    }
+  } catch (error) {
     // 操作失败时回滚状态
     comment.likeCount = oldCount;
-    comment.isLiked = !comment.isLiked;
-    console.error('点赞失败:', error)
-  })
-
-
+    comment.isLiked = oldIsLiked;
+    console.error('点赞操作失败:', error)
+  }
 }
-
 function formatDateTime(isoString:string) {
   // 1. 创建Date对象解析ISO字符串
   const date = new Date(isoString);
@@ -268,7 +291,7 @@ const toggleDetails = (comment: GalaxyCommentDto) => {
   }
 }
 
-// 提交回复
+// 提交回复（带通知功能）
 const submitReply = async (comment: GalaxyCommentDto) => {
   if (!replyContent.value.trim()) {
     alert('请先输入你的量子回复！');
@@ -281,19 +304,14 @@ const submitReply = async (comment: GalaxyCommentDto) => {
   }
 
   try {
-    // 添加到回复列表
-    if (!comment.replies) {
-      comment.replies = [];
-    }
-    // 1. 先保存要发送的内容
+    // 保存原始内容（用于通知）
     const contentToSend = replyContent.value;
 
-    // 2. 立即清空UI
+    // 清空UI（优化用户体验）
     replyContent.value = '';
     activeReplyId.value = null;
 
-    // 这里应该是实际的API调用
-    console.log("评论内容",comment.content)
+    // 提交回复到服务器
     await commentStore.publishComment({
       parentId: comment.galaxyCommentId,
       content: contentToSend,
@@ -301,6 +319,17 @@ const submitReply = async (comment: GalaxyCommentDto) => {
       userId: props.userId
     });
 
+    // 仅当回复对象不是自己时发送通知
+    if (props.userId !== comment.userId) {
+      // 发送类型4的通知（评论回复通知）
+      await notificationStore.sendMessage({
+        userId: props.userId,
+        receiverId: comment.userId, // 被回复的用户
+        content: `星际旅客#${props.userId}回复了你的评论"${comment.content.substring(0, 30)}..."，他说: "${contentToSend.substring(0, 30)}..."`, // 截取部分内容
+        type: 1 // 评论回复通知类型
+      });
+
+    }
 
     alert('回复已成功发射到星际网络！');
   } catch (error) {

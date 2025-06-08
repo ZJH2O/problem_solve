@@ -95,7 +95,7 @@ export const useCommentStore = defineStore('comment', {
       commentId:number
     }) {
       try {
-        const response = await service.post(
+        const response = await service.post<ResponseMessage<string>>(
           `/planet/comment/like?userId=${params.userId}&commentId=${params.commentId}`,
           null // 请求体为空
         )

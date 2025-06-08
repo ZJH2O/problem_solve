@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { NotificationDto, UnreadCount, ResponseMessage } from '@/types/notification'
+import type { NotificationDto, UnreadCount, ResponseMessage, MessageDto } from '@/types/notification'
 import service from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
@@ -313,6 +313,30 @@ export const useNotificationStore = defineStore('notification', {
       await this.fetchNotifications({
         page: this.currentPage + 1
       })
-    }
+    },
+
+    async sendMessage(message:MessageDto){
+      try{
+        const res = await service.post<ResponseMessage<string>>(
+          '/notification/send',
+          null, // 请求体为空
+          {
+            params: {
+              userId: message.userId,
+              receiverId: message.receiverId,
+              content: message.content,
+              Type: message.type || 7 // 默认类型7
+            }
+          }
+        )
+        if(res.data.code === 200){
+          console.log(res.data.data)
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`信息发送失败:${error}`)
+      }
+    },
+
   }
 })

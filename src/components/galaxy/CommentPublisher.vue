@@ -54,12 +54,14 @@
 import { ref } from 'vue'
 import { useGalaxyCommentStore } from '@/stores/galaxyComment'
 import { ElMessage } from 'element-plus'
-
+import { useNotificationStore } from '@/stores/notification';
+import { useGalaxyStore } from '@/stores/galaxy';
+const notificationStore = useNotificationStore()
 const props = defineProps<{
   galaxyId: string
   userId: number
 }>()
-
+const galaxyStore = useGalaxyStore()
 const commentStore = useGalaxyCommentStore()
 const newComment = ref({
   content: '',
@@ -68,32 +70,41 @@ const newComment = ref({
 const submitting = ref(false)
 const errorMessage = ref('')
 
-// 提交评论
+// 提交评论（带通知功能）
 const submitComment = async () => {
-  if (!newComment.value.content.trim()) return
+  if (!newComment.value.content.trim()) return;
 
-  submitting.value = true
-  errorMessage.value = ''
+  submitting.value = true;
+  errorMessage.value = '';
 
   try {
-    // 调用store发布评论
+    // 1. 保存评论内容（用于后续通知）
+    const commentContent = newComment.value.content;
+
+    // 2. 发布评论
     await commentStore.publishComment({
       galaxyId: props.galaxyId,
       userId: props.userId,
-      content: newComment.value.content,
+      content: commentContent,
       parentId: newComment.value.parentId
-    })
+    });
 
-    // 清空输入
-    newComment.value.content = ''
+    // 3. 清空输入框
+    newComment.value.content = '';
 
+    // 4. 发送类型为3的通知（新评论通知）
+    await notificationStore.sendMessage({
+      userId: props.userId,                     // 当前评论者ID
+      receiverId: galaxyStore.currentGalaxy?.userId, // 获取文章作者ID
+      content: `星际旅客${props.userId}在你的星系#${props.galaxyId}中评论: "${commentContent.substring(0, 30)}..."`, // 截取部分内容
+      type: 3
+    });
 
-
-  } catch (error: any) {
-    console.error('量子传送失败:', error)
-    errorMessage.value = `星际传输中断: ${error.message || '未知错误'}`
+  } catch (error:any) {
+    console.error('量子传送失败:', error);
+    errorMessage.value = `星际传输中断: ${error.message || '未知错误'}`;
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
