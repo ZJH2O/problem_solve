@@ -8,12 +8,29 @@
     <div class="modal-content" ref="modalContent">
       <!-- 顶部标题栏（移除拖拽事件） -->
       <div class="modal-header">
-        <h2 class="modal-title">🌌 星系创建引擎</h2>
+        <h2 class="modal-title">🌌 星际穿越引擎</h2>
         <button class="close-btn" @click="handleClose"></button>
       </div>
 
+      <!-- 模式切换标签 -->
+      <div class="mode-tabs">
+        <button
+          class="tab-button"
+          :class="{ 'active': activeMode === 'create' }"
+          @click="activeMode = 'create'"
+        >
+          🪐 创建星系
+        </button>
+        <button
+          class="tab-button"
+          :class="{ 'active': activeMode === 'join' }"
+          @click="activeMode = 'join'"
+        >
+          🔑 加入星系
+        </button>
+      </div>
       <!-- 表单区域 -->
-      <div class="modal-body">
+      <div class="modal-body" v-if="activeMode === 'create'">
         <form class="creator-form" @submit.prevent="submit">
           <!-- 星系名称 -->
           <div class="form-group">
@@ -98,7 +115,54 @@
           </div>
         </div>
       </div>
+
+      <!-- 加入星系表单 -->
+      <div class="modal-body" v-if="activeMode === 'join'">
+        <div class="invite-form">
+          <div class="form-group">
+            <label class="form-label">邀请码</label>
+            <div class="input-wrapper">
+              <input
+                v-model="inviteCode"
+                class="form-input"
+                placeholder="输入8位星系邀请码"
+                required
+              >
+              <span class="input-glow"></span>
+            </div>
+            <div class="invite-hint">请向星系管理员获取访问邀请码</div>
+          </div>
+
+          <button
+            class="submit-btn"
+            @click="joinGalaxy"
+            :disabled="!inviteCode || isJoining"
+          >
+            <span class="button-text">
+              {{ isJoining ? '加入中...' : '加入星系' }}
+            </span>
+            <span class="loading-indicator" v-show="isJoining">
+              <div class="spinner"></div>
+            </span>
+          </button>
+
+          <!-- 邀请码说明 -->
+          <div class="invite-info">
+            <h4>📜 邀请码说明</h4>
+            <ul>
+              <li>邀请码由8位字母数字组成，不区分大小写</li>
+              <li>每个邀请码只能使用一次</li>
+              <li>有效期为30天，过期后需重新获取</li>
+              <li>加入星系后，您将获得星系访问权限</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+
     </div>
+
+
 
     <!-- 动态星流背景 -->
     <div class="stars" id="stars"></div>
@@ -113,7 +177,7 @@ import { useUserStore } from '@/stores/user'
 
 const galaxyStore = useGalaxyStore()
 const userStore = useUserStore()
-
+const activeMode = ref('create') // 'create' 或 'join'
 // 弹窗状态
 const isOpen = ref(galaxyStore.showCreator)
 const modalContent = ref<HTMLElement | null>(null)
@@ -125,6 +189,10 @@ const formData = ref<KnowledgeGalaxyDto>({
   label: '',
   permission: 1
 })
+
+// 邀请码数据
+const inviteCode = ref('')
+const isJoining = ref(false)
 
 // 提交状态
 const isSubmitting = ref(false)
@@ -154,6 +222,33 @@ const submit = async () => {
     isSubmitting.value = false
   }
 }
+
+
+// 加入星系
+const joinGalaxy = async () => {
+  if (!inviteCode.value) return
+
+  isJoining.value = true
+
+  try {
+    // 验证邀请码格式 (8位字母数字)
+    const regex = /^[a-zA-Z0-9]{8}$/;
+    if (!regex.test(inviteCode.value)) {
+      throw new Error('邀请码格式不正确，请输入8位字母数字组合')
+    }
+    console.log("已加入星系",inviteCode.value)
+    // 调用加入星系API
+    // const result = await galaxyStore.joinGalaxy(inviteCode.value)
+    // alert(`成功加入星系：${result.galaxyName}`)
+    handleClose()
+  } catch (error) {
+    console.error('加入星系失败:', error)
+    alert(`加入失败: ${error || '未知错误'}`)
+  } finally {
+    isJoining.value = false
+  }
+}
+
 
 
 
@@ -640,6 +735,103 @@ const createStars = () => {
   .submit-btn {
     padding: 18px 30px;
     font-size: 1.1rem;
+  }
+}/* 新增样式：模式切换标签 */
+.mode-tabs {
+  display: flex;
+  margin: 0 40px 20px;
+  border-bottom: 1px solid rgba(100, 200, 250, 0.1);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 15px 0;
+  background: transparent;
+  border: none;
+  color: #88aaff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: #7df9ff;
+}
+
+.tab-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #00ccff, #0066ff);
+}
+
+.tab-button:hover:not(.active) {
+  color: #a0d5ff;
+}
+
+/* 邀请码表单样式 */
+.invite-form {
+  padding: 10px 0;
+}
+
+.invite-hint {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #6c8ba5;
+}
+
+.invite-info {
+  margin-top: 40px;
+  padding: 20px;
+  background: rgba(5, 15, 35, 0.6);
+  border-radius: 15px;
+  border: 1px dashed rgba(100, 200, 250, 0.1);
+}
+
+.invite-info h4 {
+  color: #7df9ff;
+  margin-bottom: 15px;
+}
+
+.invite-info ul {
+  padding-left: 20px;
+}
+
+.invite-info li {
+  margin-bottom: 10px;
+  color: #a0d5ff;
+  line-height: 1.5;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .mode-tabs {
+    margin: 0 30px 15px;
+  }
+
+  .tab-button {
+    padding: 12px 0;
+    font-size: 1rem;
+  }
+
+  .invite-info {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-tabs {
+    margin: 0 20px 10px;
+  }
+
+  .tab-button {
+    font-size: 0.95rem;
+    padding: 10px 0;
   }
 }
 </style>

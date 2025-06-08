@@ -70,3 +70,11 @@ export interface ResponseMessage<T> {
   message: string
   data: T
 }
+
+//发送消息类型
+export interface MessageDto{
+  userId:number
+  receiverId:number
+  type:number
+  content?:string
+}

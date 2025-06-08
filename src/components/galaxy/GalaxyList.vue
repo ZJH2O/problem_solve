@@ -24,7 +24,7 @@
 
         <button class="add-galaxy-btn" @click="addGalaxy">
           <i class="fas fa-plus"></i>
-          <span>创建新星系</span>
+          <span>发现新星系</span>
         </button>
       </div>
     </div>
@@ -163,6 +163,8 @@ import router from '@/router';
 import { useFriendStore } from '@/stores/friend';
 import type { FriendDto } from '@/types/friend';
 import { useUserStore } from '@/stores/user';
+import { useNotificationStore } from '@/stores/notification';
+import type { MessageDto } from '@/types/notification';
 const galaxyStore = useGalaxyStore();
 const searchTerm = ref('');
 const friendStore = useFriendStore();
@@ -171,6 +173,7 @@ const shareGalaxyData = ref<KnowledgeGalaxyDto | null>(null);
 const friendSearchKeyword = ref('');
 const friends = ref<FriendDto[]>([]);
 const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 // 初始化星系数据
 onMounted(async () => {
       await galaxyStore.init();
@@ -234,9 +237,14 @@ onMounted(async () => {
     // 发送分享请求
     const sendShareRequest = async (friendUserId: number) => {
 
+      const params:MessageDto = {
+        userId:userStore.userInfo.userId,
+        receiverId:friendUserId,
+        type:8,
+        content: `我想与您分享一个星系，邀请码：${shareGalaxyData.value?.inviteCode}。`
+      }
 
-
-
+      await notificationStore.sendMessage(params)
 
       console.log("已发送分享请求给:",friendUserId)
       alert("分享成功，等待对方同意后成为管理员")

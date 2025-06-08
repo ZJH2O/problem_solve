@@ -7,7 +7,7 @@ import type {
 import service from '@/utils/request'
 import { useUserStore } from './user'
 import type { KnowledgePlanetDto } from '@/types/planet'
-import { number } from 'echarts'
+
 
 const userStore = useUserStore()
 
