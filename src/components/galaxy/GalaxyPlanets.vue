@@ -77,7 +77,14 @@ const filteredPlanets = computed(() => {
  );
 });
 
-
+// 配置选项
+const PLANET_CONFIG = {
+  baseSize: 100,      // 基础大小（减小到250px）
+  maxSize: 350,       // 最大尺寸限制（350px）
+  sizeRange: 80,      // 尺寸变化范围（从80px减小）
+  baseFontSize: 14,   // 基础字体大小
+  maxFontSize: 18     // 最大字体大小
+};
 interface TooltipData {
  contentTitle: string;
  description: string;
@@ -116,20 +123,24 @@ const minVisitors = computed(() => store.minVisitors);
 
 // 修改后的星球样式计算
 const planetStyle = (planet: KnowledgePlanetDto) => {
- // 1. 设置基础大小（假设大小）
- const baseSize = 100; // 基础大小为100px
+
 
  // 2. 计算访问人数比例（0-1之间）
  const visitorRatio = maxVisitors.value === minVisitors.value
    ? 0.5 // 避免除以0的情况
    : (planet.visitCount - minVisitors.value) / (maxVisitors.value - minVisitors.value);
 
- // 3. 在基础大小上根据访问人数增加尺寸（最大增加100px）
- const size = baseSize + visitorRatio * 100;
- const position = planetPositions.value[planet.planetId] || { x: 0, y: 0 };
- // 4. 颜色计算（根据访问人数比例变化）
- const hue = visitorRatio * 120; // HSL色相值变化范围（0-120）
-
+  // 计算尺寸，确保不超过最大值
+  const calculatedSize = PLANET_CONFIG.baseSize + visitorRatio * PLANET_CONFIG.sizeRange;
+  const size = Math.min(calculatedSize, PLANET_CONFIG.maxSize);
+  const position = planetPositions.value[planet.planetId] || { x: 0, y: 0 };
+  // 4. 颜色计算（根据访问人数比例变化）
+  const hue = visitorRatio * 120; // HSL色相值变化范围（0-120）
+  // 计算字体大小，也要限制最大值
+  const fontSize = Math.min(
+    Math.max(PLANET_CONFIG.baseFontSize, PLANET_CONFIG.baseFontSize + 4 * visitorRatio),
+    PLANET_CONFIG.maxFontSize
+  );
  const lightColor = `hsl(${hue}, 90%, 65%)`; // 亮部颜色
  const darkColor = `hsl(${hue}, 70%, 35%)`;  // 暗部颜色
  const glowColor = `hsla(${hue}, 100%, 50%, 0.5)`; // 光晕颜色
@@ -145,7 +156,7 @@ const planetStyle = (planet: KnowledgePlanetDto) => {
     transform: 'translate(-50%, -50%)', // 确保星球中心在指定位置
    background: `radial-gradient(circle at 30% 30%, ${lightColor}, ${darkColor})`, // 动态渐变
    cursor: 'pointer',
-   fontSize: `${Math.max(12, 14 * visitorRatio)}px` // 文字大小也根据访问人数变化
+   fontSize: `${fontSize}px` // 文字大小也根据访问人数变化
  };
 };
 
