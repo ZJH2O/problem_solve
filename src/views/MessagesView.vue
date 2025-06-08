@@ -132,10 +132,14 @@ const wsConnected = ref(false)
 const userStore = useUserStore()
 // 通知类型配置
 const notificationTypes = [
-  { value: 1, label: '评论回复', icon: '💬' },
-  { value: 2, label: '评论点赞', icon: '👍' },
-  { value: 3, label: '新评论', icon: '📝' },
-  { value: 7, label: '系统通知', icon: '📢' }
+  { value: 1, label: '星系评论回复', icon: '💬' },
+  { value: 2, label: '星系评论点赞', icon: '👍' },
+  { value: 3, label: '星系新评论', icon: '📝' },
+  { value: 4, label: '星球评论回复', icon: '💬' },
+  { value: 5, label: '星球评论点赞', icon: '👍' },
+  { value: 6, label: '星球新评论', icon: '📝' },
+  { value: 7, label: '系统通知', icon: '📢' },
+  { value: 8, label: '星系管理员任命通知', icon: '📬' }
 ]
 
 // 类型信息映射
