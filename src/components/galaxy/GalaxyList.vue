@@ -233,32 +233,13 @@ onMounted(async () => {
     });
     // 发送分享请求
     const sendShareRequest = async (friendUserId: number) => {
-      // if (!shareGalaxyData.value) return;
 
-      // try {
-      //   // 更新UI状态
-      //   const friend = friends.value.find(f => f.friendUserId === friendUserId);
-      //   if (friend) friend.isSharing = true;
 
-      //   // 发送分享请求
-      //   await friendStore.sendFriendRequest({
-      //     friendUserId,
-      //     source: 2, // 2表示星系分享
-      //     sourceId: shareGalaxyData.value.galaxyId.toString(),
-      //     requestMessage: `我想与你分享星系：${shareGalaxyData.value.name}`
-      //   });
 
-      //   // 成功提示
-      //   alert(`已成功分享星系给${friend?.friendName}`);
-      // } catch (error) {
-      //   console.error('分享失败:', error);
-      //   alert('分享失败，请重试');
-      // } finally {
-      //   // 重置状态
-      //   const friend = friends.value.find(f => f.friendUserId === friendUserId);
-      //   if (friend) friend.isSharing = false;
-      // }
+
+
       console.log("已发送分享请求给:",friendUserId)
+      alert("分享成功，等待对方同意后成为管理员")
     };
 
     const addGalaxy = () => {
@@ -658,7 +639,7 @@ const deleteGalaxy = async (galaxyId: string) => {
   background: transparent;
   border: none;
   color: #a0a0ff;
-  font-size: 1.2rem;
+  font-size: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }

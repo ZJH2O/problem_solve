@@ -312,6 +312,15 @@ export const useNotificationStore = defineStore('notification', {
       await this.fetchNotifications({
         page: this.currentPage + 1
       })
-    }
+    },
+
+
+    async sendMessage(){
+      try{
+
+      }catch(error){
+        throw new Error(`信息发送失败:${error}`)
+      }
+    },
   }
 })

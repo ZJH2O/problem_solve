@@ -7,6 +7,7 @@ import type {
 import service from '@/utils/request'
 import { useUserStore } from './user'
 import type { KnowledgePlanetDto } from '@/types/planet'
+import { number } from 'echarts'
 
 const userStore = useUserStore()
 
@@ -16,7 +17,7 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
     galaxies: [] as KnowledgeGalaxyDto[], // 星系列表
     currentGalaxy: null as KnowledgeGalaxyDto | null ,// 当前查看的星系
     showCreator: false ,// 是否显示创建星系的对话框
-    galaxyPlanets: [] as KnowledgePlanetDto[] //星系里面的星球
+    galaxyPlanets: [] as KnowledgePlanetDto[], //星系里面的星球
   }),
 
   actions: {
@@ -289,5 +290,19 @@ export const useGalaxyStore = defineStore('knowledgeGalaxy', {
         throw new Error(`请求失败: ${error}`)
       }
     },
+
+    async getGalaxyPlanetCount(galaxyId:string){
+      try{
+        const res = await service.get<ResponseMessage<number>>(
+          `/galaxy/${galaxyId}/planetCount`
+        )
+        if(res.data.code == 200){
+          console.log("当前星系星球数",res.data.data)
+          return res.data.data
+        }
+      }catch(error){
+        throw new Error(`请求失败: ${error}`)
+      }
+    }
   }
 })

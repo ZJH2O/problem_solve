@@ -2,6 +2,7 @@
 import { ref, watchEffect, onMounted, computed } from 'vue'
 import { useGalaxyStore } from '@/stores/galaxy'
 import type { KnowledgeGalaxyDto } from '@/types/galaxy';
+import type { KnowledgePlanetDto } from '@/types/planet';
 
 const props = defineProps<{
   galaxyId: string
@@ -11,12 +12,17 @@ const galaxyStore = useGalaxyStore()
 const galaxy = ref<KnowledgeGalaxyDto | null>(null)
 const isLoading = ref(true)
 const animationComplete = ref(false)
-
+const planetCount = ref<number|undefined>(0)
+const planets = ref<KnowledgePlanetDto[] | undefined>([])
 // 获取星系数据
 watchEffect(async () => {
   try {
     const data = await galaxyStore.getGalaxyInfo(props.galaxyId)
+    const count = await galaxyStore.getGalaxyPlanetCount(props.galaxyId)
+    const payload = await galaxyStore.initPlanets(props.galaxyId)
     galaxy.value = data
+    planetCount.value = count
+    planets.value = payload
   } catch (error) {
     console.error('获取星系信息失败:', error)
   } finally {
@@ -24,12 +30,12 @@ watchEffect(async () => {
   }
 })
 
-const planetCount = computed(()=>{
-  return galaxyStore.currentGalaxy?.planets?.length || 0
-})
+
 
 // 页面加载动画控制
-onMounted(() => {
+onMounted(async() => {
+
+
   setTimeout(() => {
     animationComplete.value = true
   }, 500)
@@ -88,20 +94,33 @@ const formatDate = (dateString?: string) => {
           </div>
 
           <div class="info-cell full-width">
+          <div class="info-header">
             <span class="info-label">附属行星</span>
-            <div class="planets-grid">
-              <span
-                v-for="(planet, index) in galaxy.planets || []"
+          </div>
+
+          <div class="planets-container">
+            <div v-if="planets && planets.length" class="planets-grid">
+              <div
+                v-for="(planet, index) in planets.slice(0, 4)"
                 :key="index"
-                class="planet-badge"
+                class="planet-card"
+                :class="{'planet-has-desc': planet.description}"
               >
-                {{ planet }}
-              </span>
-              <span v-if="!(galaxy.planets && galaxy.planets.length)" class="empty-planet">
-                ⚠️ 未探测到行星
-              </span>
+                <div class="planet-info">
+                  <div class="planet-name">{{ planet.planetId || '未知行星' }}</div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-planets">
+              <div class="empty-icon">🪐</div>
+              <p class="empty-text">未探测到任何行星</p>
+            </div>
+
+            <div v-if="planets && planets.length > 4" class="more-planets-hint">
+              除此之外还有 {{ planets.length - 4 }} 个行星...
             </div>
           </div>
+        </div>
         </div>
 
         <!-- 星系数据 -->
@@ -386,6 +405,154 @@ const formatDate = (dateString?: string) => {
     transform: translateY(0);
   }
 }
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
 
+/* 行星容器 */
+.planets-container {
+  margin-top: 10px;
+}
 
+/* 行星网格布局 */
+.planets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #4a69bd rgba(15, 23, 42, 0.3);
+}
+
+.planets-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.planets-grid::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 3px;
+}
+
+.planets-grid::-webkit-scrollbar-thumb {
+  background: #4a69bd;
+  border-radius: 3px;
+}
+
+/* 行星卡片 */
+.planet-card {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: rgba(20, 30, 50, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(100, 149, 237, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.planet-card:hover {
+  box-shadow: 0 5px 15px rgba(100, 149, 237, 0.2);
+  border-color: rgba(100, 149, 237, 0.4);
+  background: rgba(25, 35, 60, 0.7);
+}
+
+.planet-card.planet-has-desc:hover {
+  background: rgba(25, 40, 70, 0.8);
+}
+
+/* 行星图标 */
+.planet-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.planet-symbol {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* 行星信息 */
+.planet-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.planet-name {
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planet-desc {
+  font-size: 12px;
+  color: #8892b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 行星状态 */
+.planet-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: rgba(100, 149, 237, 0.2);
+  color: #8892b0;
+  flex-shrink: 0;
+}
+
+.planet-status.active {
+  background: rgba(100, 237, 149, 0.2);
+  color: #64ed95;
+}
+
+/* 空状态 */
+.empty-planets {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px dashed rgba(100, 149, 237, 0.3);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  color: #78d2ea;
+}
+
+.empty-text {
+  color: #8892b0;
+  margin-bottom: 15px;
+}
+/* 更多行星提示 */
+.more-planets-hint {
+  text-align: center;
+  color: #8892b0;
+  font-size: 14px;
+  margin-top: 10px;
+  font-style: italic;
+}
 </style>

@@ -1,5 +1,6 @@
 <template>
   <!-- 固定在左侧边缘中间的按钮 -->
+   <div v-if="userStore.userInfo.userId === galaxyStore.currentGalaxy?.userId">
   <div class="admin-panel-container">
     <button
       class="control-button cosmic-btn"
@@ -62,6 +63,7 @@
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
