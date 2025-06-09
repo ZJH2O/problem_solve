@@ -1,224 +1,85 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { SystemAdmin } from '@/types/admin'
-import apiClient from '@/utils/axios' // 使用新的 Axios 实例
-import { useUserStore } from './user'
+// src/stores/admin.ts
+import { defineStore } from 'pinia';
+import adminService from '@/services/adminService';
+import type { SystemAdmin } from '@/types/admin';
 
+export const useAdminStore = defineStore('admin', {
+  state: () => ({
+    admins: [] as SystemAdmin[],
+    isLoading: false,
+    error: null as string | null
+  }),
 
-export const useAdminStore = defineStore('admin', () => {
-  const userStore = useUserStore()
+  actions: {
+    // 获取管理员列表
+    async fetchAdmins() {
+      this.isLoading = true;
+      this.error = null;
 
-  // 管理员列表
-  const admins = ref<SystemAdmin[]>([])
+      try {
+        this.admins = await adminService.fetchAdmins();
+      } catch (error: any) {
+        this.error = error.message || '获取管理员列表失败';
+        console.error('fetchAdmins error:', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-  // 当前用户的管理员状态
-  const isAdmin = ref(false)
+    // 添加管理员
+    async addAdmin(userId: number) {
+      this.isLoading = true;
+      this.error = null;
 
-  // 错误信息
-  const error = ref<string | null>(null)
+      try {
+        await adminService.addAdmin({ userId });
+        await this.fetchAdmins(); // 刷新列表
+      } catch (error: any) {
+        this.error = error.message || '添加管理员失败';
+        console.error('addAdmin error:', error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
-  // 加载状态
-  const isLoading = ref(false)
+    // 删除星系评论
+    async deleteGalaxyComment(commentId: number, reason: string) {
+      try {
+        return await adminService.deleteGalaxyComment({ commentId, reason });
+      } catch (error: any) {
+        console.error('deleteGalaxyComment error:', error);
+        throw new Error(error.message || '删除评论失败');
+      }
+    },
 
-  // 检查当前用户是否为管理员
-  const checkAdminStatus = async () => {
-    if (!userStore.isLoggedIn) return false
+    // 删除星球评论
+    async deletePlanetComment(commentId: number, reason: string) {
+      try {
+        return await adminService.deletePlanetComment({ commentId, reason });
+      } catch (error: any) {
+        console.error('deletePlanetComment error:', error);
+        throw new Error(error.message || '删除评论失败');
+      }
+    },
 
-    isLoading.value = true
-    try {
-      const response = await apiClient.get(`/admin/is-admin/${userStore.userId}`)
-      isAdmin.value = response
-      return response
-    } catch (err) {
-      error.value = '无法验证管理员状态: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
+    // 封禁用户
+    async banUser(userId: number, reason: string, duration: number) {
+      try {
+        return await adminService.banUser({ userId, reason, duration });
+      } catch (error: any) {
+        console.error('banUser error:', error);
+        throw new Error(error.message || '封禁用户失败');
+      }
+    },
+
+    // 解封用户
+    async unbanUser(userId: number) {
+      try {
+        return await adminService.unbanUser(userId);
+      } catch (error: any) {
+        console.error('unbanUser error:', error);
+        throw new Error(error.message || '解封用户失败');
+      }
     }
   }
-
-  // 获取所有管理员
-  const fetchAdmins = async () => {
-    if (!isAdmin.value) {
-      error.value = '无权限访问管理员列表'
-      return
-    }
-
-    isLoading.value = true
-    try {
-      const response = await apiClient.get('/admin/list')
-      admins.value = response
-      error.value = null
-    } catch (err) {
-      error.value = '获取管理员列表失败: ' + (err as Error).message
-      admins.value = []
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 添加管理员
-  const addAdmin = async (userId: number, permissions: string) => {
-    if (!isAdmin.value) {
-      error.value = '无权限添加管理员'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.post('/admin/add', {
-        userId,
-        permissions,
-        operatorId: userStore.userId
-      })
-      await fetchAdmins() // 刷新列表
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '添加管理员失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 更新管理员状态
-  const updateAdminStatus = async (adminId: number, status: number) => {
-    if (!isAdmin.value) {
-      error.value = '无权限修改管理员状态'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.put(`/admin/status/${adminId}`, { status })
-      await fetchAdmins() // 刷新列表
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '更新管理员状态失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 封禁用户
-  const banUser = async (userId: number, reason: string, duration: number) => {
-    if (!isAdmin.value) {
-      error.value = '无权限执行封禁操作'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.post('/admin/ban', {
-        userId,
-        adminId: userStore.userId,
-        reason,
-        duration
-      })
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '封禁用户失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 解封用户
-  const unbanUser = async (userId: number) => {
-    if (!isAdmin.value) {
-      error.value = '无权限执行解封操作'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.post('/admin/unban', {
-        userId,
-        adminId: userStore.userId
-      })
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '解封用户失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 删除星系评论
-  const deleteGalaxyComment = async (commentId: number, reason: string) => {
-    if (!isAdmin.value) {
-      error.value = '无权限删除评论'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.delete(`/admin/comment/galaxy/${commentId}`, {
-        data: {
-          adminId: userStore.userId,
-          reason
-        }
-      })
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '删除星系评论失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 删除星球评论
-  const deletePlanetComment = async (commentId: number, reason: string) => {
-    if (!isAdmin.value) {
-      error.value = '无权限删除评论'
-      return false
-    }
-
-    isLoading.value = true
-    try {
-      await apiClient.delete(`/admin/comment/planet/${commentId}`, {
-        data: {
-          adminId: userStore.userId,
-          reason
-        }
-      })
-      error.value = null
-      return true
-    } catch (err) {
-      error.value = '删除星球评论失败: ' + (err as Error).message
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // 清除错误信息
-  const clearError = () => {
-    error.value = null
-  }
-
-  return {
-    admins,
-    isAdmin,
-    error,
-    isLoading,
-    checkAdminStatus,
-    fetchAdmins,
-    addAdmin,
-    updateAdminStatus,
-    banUser,
-    unbanUser,
-    deleteGalaxyComment,
-    deletePlanetComment,
-    clearError
-  }
-})
+});
