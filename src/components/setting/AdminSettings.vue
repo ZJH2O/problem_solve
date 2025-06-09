@@ -10,17 +10,6 @@
           <label>用户ID</label>
           <input type="number" v-model="newAdmin.userId" placeholder="输入用户ID">
         </div>
-        <div class="form-group">
-          <label>权限设置</label>
-          <div class="permissions-grid">
-            <label v-for="permission in availablePermissions" :key="permission.value">
-              <input type="checkbox"
-                     v-model="newAdmin.permissions"
-                     :value="permission.value">
-              {{ permission.label }}
-            </label>
-          </div>
-        </div>
         <button class="action-button add" @click="addAdmin">添加管理员</button>
       </div>
 
@@ -30,27 +19,15 @@
         <div class="admin-table">
           <div class="admin-header">
             <div class="header-cell">用户ID</div>
-            <div class="header-cell">权限</div>
             <div class="header-cell">状态</div>
-            <div class="header-cell action-cell">操作</div>
           </div>
           <div class="admin-row" v-for="admin in adminStore.admins" :key="admin.adminId">
             <div class="admin-cell">{{ admin.userId }}</div>
-            <div class="admin-cell permissions-cell">
-              <span v-for="perm in parsePermissions(admin.permissions)" :key="perm" class="permission-tag">
-                {{ getPermissionLabel(perm) }}
-              </span>
-            </div>
-            <div class="admin-cell" :class="{ 'status-active': admin.status === 0, 'status-inactive': admin.status === 1 }">
+            <div class="admin-cell" :class="{
+              'status-active': admin.status === 0,
+              'status-inactive': admin.status === 1
+            }">
               {{ admin.status === 0 ? '活跃' : '停用' }}
-            </div>
-            <div class="admin-cell action-cell">
-              <button v-if="admin.status === 0" class="action-button deactivate" @click="updateAdminStatus(admin.adminId, 1)">
-                停用
-              </button>
-              <button v-else class="action-button activate" @click="updateAdminStatus(admin.adminId, 0)">
-                启用
-              </button>
             </div>
           </div>
         </div>
@@ -72,64 +49,28 @@ onMounted(async () => {
 
 // 新管理员数据
 const newAdmin = ref({
-  userId: null as number | null,
-  permissions: [] as string[]
+  userId: null as number | null
 })
 
-// 可用权限列表
-const availablePermissions = [
-  { value: 'USER_BAN', label: '用户封禁' },
-  { value: 'CONTENT_DELETE', label: '内容删除' },
-  { value: 'GALAXY_ACCESS', label: '星系管理' },
-  { value: 'REPORT_REVIEW', label: '举报审核' },
-  { value: 'ADMIN_MANAGE', label: '管理员管理' }
-]
-
 const addAdmin = async () => {
-  if (!newAdmin.value.userId || newAdmin.value.permissions.length === 0) {
-    alert('请填写用户ID并选择至少一项权限')
+  if (!newAdmin.value.userId) {
+    alert('请填写用户ID')
     return
   }
 
   try {
-    await adminStore.addAdmin(
-      newAdmin.value.userId,
-      JSON.stringify(newAdmin.value.permissions)
-    )
+    await adminStore.addAdmin(Number(newAdmin.value.userId))
     alert('管理员添加成功')
-    newAdmin.value = { userId: null, permissions: [] }
+    newAdmin.value = { userId: null }
     await adminStore.fetchAdmins()
   } catch (error) {
     alert('添加管理员失败: ' + (error as Error).message)
   }
 }
-
-const updateAdminStatus = async (adminId: number, status: number) => {
-  try {
-    await adminStore.updateAdminStatus(adminId, status)
-    alert('管理员状态已更新')
-    await adminStore.fetchAdmins()
-  } catch (error) {
-    alert('更新状态失败: ' + (error as Error).message)
-  }
-}
-
-// 辅助方法
-const parsePermissions = (permissionsJson: string) => {
-  try {
-    return JSON.parse(permissionsJson)
-  } catch {
-    return []
-  }
-}
-
-const getPermissionLabel = (value: string) => {
-  const permission = availablePermissions.find(p => p.value === value)
-  return permission ? permission.label : value
-}
 </script>
 
 <style scoped>
+/* 移除 .action-cell 相关的样式 */
 .admin-settings {
   color: #e0e0ff;
 }
@@ -185,31 +126,6 @@ const getPermissionLabel = (value: string) => {
   font-size: 1rem;
 }
 
-.permissions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.8rem;
-}
-
-.permissions-grid label {
-  display: flex;
-  align-items: center;
-  padding: 0.6rem;
-  background: rgba(20, 40, 80, 0.4);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.permissions-grid label:hover {
-  background: rgba(30, 60, 120, 0.5);
-}
-
-.permissions-grid input {
-  width: auto;
-  margin-right: 0.5rem;
-}
-
 .action-button {
   padding: 0.8rem 1.2rem;
   border: none;
@@ -229,16 +145,6 @@ const getPermissionLabel = (value: string) => {
   background: linear-gradient(to right, #00b09b, #96c93d);
   color: white;
   width: 100%;
-}
-
-.deactivate {
-  background: #ff6b6b;
-  color: white;
-}
-
-.activate {
-  background: #4facfe;
-  color: white;
 }
 
 .admin-table {
@@ -263,27 +169,6 @@ const getPermissionLabel = (value: string) => {
 .admin-cell {
   flex: 1;
   padding: 0 0.5rem;
-}
-
-.header-cell.action-cell,
-.admin-cell.action-cell {
-  flex: 0.5;
-  text-align: center;
-}
-
-.permissions-cell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.permission-tag {
-  background: rgba(0, 180, 216, 0.2);
-  color: #90e0ef;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  white-space: nowrap;
 }
 
 .status-active {

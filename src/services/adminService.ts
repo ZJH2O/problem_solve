@@ -1,70 +1,86 @@
-import axios from '@/utils/axios'
-import type { SystemAdmin } from '@/types/admin'
+// src/services/adminService.ts
+import api from '@/utils/axios';
+import type {
+  SystemAdmin,
+  AddAdminRequest,
+  DeleteCommentRequest,
+  BanUserRequest,
+  ApiResponse
+} from '@/types/admin';
 
-const BASE_URL = '/api/admin'
-
-export const adminService = {
-  // 检查用户是否为管理员
-  async isSystemAdmin(userId: number): Promise<boolean> {
-    const response = await axios.get(`${BASE_URL}/is-admin/${userId}`)
-    return response.data
+export default {
+  // 获取所有管理员
+  async fetchAdmins(): Promise<SystemAdmin[]> {
+    const response: ApiResponse<SystemAdmin[]> = await api.get('/admin/list');
+    if (response.success && response.data) {
+      return response.data;
+    } else {
+      throw new Error(response.message || '获取管理员列表失败');
+    }
   },
 
-  // 获取所有系统管理员
-  async getAllSystemAdmins(): Promise<SystemAdmin[]> {
-    const response = await axios.get(`${BASE_URL}/list`)
-    return response.data
-  },
-
-  // 添加系统管理员
-  async addSystemAdmin(userId: number, permissions: string, operatorId: number): Promise<void> {
-    await axios.post(`${BASE_URL}/add`, {
-      userId,
-      permissions,
-      operatorId
-    })
-  },
-
-  // 更新管理员状态
-  async updateAdminStatus(adminId: number, status: number): Promise<void> {
-    await axios.put(`${BASE_URL}/status/${adminId}`, { status })
-  },
-
-  // 封禁用户
-  async banUser(userId: number, adminId: number, reason: string, duration: number): Promise<void> {
-    await axios.post(`${BASE_URL}/ban`, {
-      userId,
-      adminId,
-      reason,
-      duration
-    })
-  },
-
-  // 解封用户
-  async unbanUser(userId: number, adminId: number): Promise<void> {
-    await axios.post(`${BASE_URL}/unban`, {
-      userId,
-      adminId
-    })
+  // 添加管理员
+  async addAdmin(request: AddAdminRequest): Promise<SystemAdmin> {
+    // 默认权限
+    if (!request.permissions) {
+      request.permissions = JSON.stringify(["USER_BAN", "CONTENT_DELETE"]);
+    }
+    const response: ApiResponse<SystemAdmin> = await api.post('/admin/add', {
+      userId: request.userId,
+      permissions: request.permissions
+    });
+    if (response.success && response.data) {
+      return response.data;
+    } else {
+      throw new Error(response.message || '添加管理员失败');
+    }
   },
 
   // 删除星系评论
-  async deleteGalaxyComment(commentId: number, adminId: number, reason: string): Promise<void> {
-    await axios.delete(`${BASE_URL}/comment/galaxy/${commentId}`, {
-      data: {
-        adminId,
-        reason
-      }
-    })
+  async deleteGalaxyComment(request: DeleteCommentRequest): Promise<boolean> {
+    const response: ApiResponse = await api.delete(`/admin/galaxy/comment/${request.commentId}`, {
+      params: { reason: request.reason }
+    });
+    if (response.success) {
+      return true;
+    } else {
+      throw new Error(response.message || '删除星系评论失败');
+    }
   },
 
   // 删除星球评论
-  async deletePlanetComment(commentId: number, adminId: number, reason: string): Promise<void> {
-    await axios.delete(`${BASE_URL}/comment/planet/${commentId}`, {
-      data: {
-        adminId,
-        reason
-      }
-    })
+  async deletePlanetComment(request: DeleteCommentRequest): Promise<boolean> {
+    const response: ApiResponse = await api.delete(`/admin/planet/comment/${request.commentId}`, {
+      params: { reason: request.reason }
+    });
+    if (response.success) {
+      return true;
+    } else {
+      throw new Error(response.message || '删除星球评论失败');
+    }
+  },
+
+  // 封禁用户
+  async banUser(request: BanUserRequest): Promise<boolean> {
+    const response: ApiResponse = await api.post('/admin/user/ban', {
+      userId: request.userId,
+      reason: request.reason,
+      duration: request.duration
+    });
+    if (response.success) {
+      return true;
+    } else {
+      throw new Error(response.message || '封禁用户失败');
+    }
+  },
+
+  // 解封用户
+  async unbanUser(userId: number): Promise<boolean> {
+    const response: ApiResponse = await api.post(`/admin/user/unban/${userId}`);
+    if (response.success) {
+      return true;
+    } else {
+      throw new Error(response.message || '解封用户失败');
+    }
   }
-}
+};
