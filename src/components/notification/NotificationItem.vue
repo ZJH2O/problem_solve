@@ -5,7 +5,7 @@
       unread: notification.isRead === 0,
       [`type-${notification.type}`]: true
     }"
-    @click="handleClick"
+
   >
     <!-- 类型图标 -->
     <div class="type-icon" :style="{ backgroundColor: typeInfo.color }">
@@ -135,7 +135,6 @@ const deleteNotification = () => {
   background: rgba(15, 20, 45, 0.6);
   border: 1px solid #2a2a5a;
   border-radius: 12px;
-  cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;

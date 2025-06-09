@@ -123,7 +123,6 @@ const enterGalaxy = async() =>{
         }
       });
       galaxyStore.currentGalaxy = galaxy.value
-      await galaxyStore.initPlanets(galaxy.value?.galaxyId)
       // 这里可以导航到星系详情页
 }
 
