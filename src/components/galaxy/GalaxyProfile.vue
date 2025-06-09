@@ -3,11 +3,12 @@ import { ref, watchEffect, onMounted, computed } from 'vue'
 import { useGalaxyStore } from '@/stores/galaxy'
 import type { KnowledgeGalaxyDto } from '@/types/galaxy';
 import type { KnowledgePlanetDto } from '@/types/planet';
+import { useUserStore } from '@/stores/user';
 
 const props = defineProps<{
   galaxyId: string
 }>()
-
+const userStore = useUserStore()
 const galaxyStore = useGalaxyStore()
 const galaxy = ref<KnowledgeGalaxyDto | null>(null)
 const isLoading = ref(true)
@@ -145,6 +146,7 @@ const formatDate = (dateString?: string) => {
     <div v-else class="quantum-error">
       <div class="error-icon">🛸</div>
       <p class="error-text">曲率引擎故障！无法连接星域数据库</p>
+      <p class="error-text" >警告！你的飞船触碰到了私有星域!</p>
     </div>
   </div>
 </template>

@@ -16,14 +16,14 @@
             {{ galaxyStore.currentGalaxy.label }}
           </el-tag>
           <el-tag :type="galaxyStore.currentGalaxy?.permission === 0 ? 'success' : 'warning'" size="large">
-            {{ galaxyStore.currentGalaxy?.permission === 0 ? '公开星系' : '私有星系' }}
+            {{ galaxyStore.currentGalaxy?.permission === 0 ? '私有星系' : '公开星系' }}
           </el-tag>
         </div>
         <div class="button-group">
-          <button class="custom-btn enter-btn" @click="enterGalaxy">
+          <button class="custom-btn enter-btn" @click="enterGalaxy" v-if="galaxyStore.currentGalaxy?.permission === 1 || galaxyStore.currentGalaxy?.userId === userStore.userInfo.userId">
             进入星系
           </button>
-          <button class="custom-btn edit-btn" @click="openEditor" v-if="galaxyStore.currentGalaxy?.userId == userStore.userInfo.userId">
+          <button class="custom-btn edit-btn" @click="openEditor" v-if="galaxyStore.currentGalaxy?.userId === userStore.userInfo.userId">
             <span class="edit-icon"  ></span> 编辑星系
           </button>
         </div>
