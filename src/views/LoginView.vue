@@ -1,7 +1,25 @@
 <template>
+
   <div class="stellar-container">
     <div class="stellar-glow"></div>
-    <div class="login-container">
+
+    <!-- 添加的主标题容器 -->
+    <div
+      class="stellar-main-title-container"
+      :class="{'title-hidden': showLoginContainer}"
+      @click="showLoginContainer = true"
+    >
+      <h1 class="stellar-main-title">
+        不靠谱星际百科
+        <span class="stellar-subtitle">知识交流平台</span>
+      </h1>
+      <div class="stellar-prompt">
+        <i class="fas fa-hand-pointer"></i> 点击进入知识星域
+      </div>
+    </div>
+
+
+    <div class="login-container" v-show="showLoginContainer">
       <h2 class="stellar-title">星域通行认证</h2>
       <form @submit.prevent="handleLogin" class="stellar-form">
         <div class="form-group">
@@ -55,6 +73,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const showPassword = ref(false)
 const rememberMe = ref(false)
+const showLoginContainer = ref(false) // 控制登录框显示
 const ENCRYPT_KEY = import.meta.env.VITE_CRYPTO_KEY || 'StellarLock#2099'
 // 初始化时读取存储的凭证
 onMounted(() => {
@@ -342,5 +361,119 @@ const handleLogin = async () => {
 @keyframes glitch-1 {
   0% { clip: rect(10px, 999px, 20px, 0) }
   100% { clip: rect(0, 999px, 15px, 0) }
+}
+
+/* 新增主标题样式 */
+.stellar-main-title-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.stellar-main-title {
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  text-shadow:
+    0 0 15px #9d4cff80,
+    0 0 25px #3d67ff80,
+    0 0 35px #00f7ff80;
+  animation: title-pulse 3s ease-in-out infinite alternate;
+}
+
+.stellar-subtitle {
+  display: block;
+  font-size: 1.5rem;
+  letter-spacing: 3px;
+  color: #00f7ff;
+  margin-top: 0.8rem;
+  text-shadow: 0 0 10px #00f7ff80;
+  animation: subtitle-pulse 4s ease-in-out infinite alternate;
+}
+
+.stellar-prompt {
+  color: #7d9bff;
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  opacity: 0.8;
+  animation: prompt-bounce 2s ease-in-out infinite;
+}
+
+.stellar-prompt i {
+  margin-right: 8px;
+  animation: spin 3s linear infinite;
+}
+
+@keyframes title-pulse {
+  0% {
+    text-shadow:
+      0 0 15px #9d4cff80,
+      0 0 25px #3d67ff80;
+    transform: scale(1);
+  }
+  100% {
+    text-shadow:
+      0 0 25px #9d4cff,
+      0 0 35px #3d67ff,
+      0 0 45px #00f7ff80;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes subtitle-pulse {
+  0% {
+    opacity: 0.7;
+    text-shadow: 0 0 5px #00f7ff80;
+  }
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 15px #00f7ff, 0 0 25px #3d67ff80;
+  }
+}
+
+@keyframes prompt-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.title-hidden {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+  pointer-events: none;
+}
+
+/* 调整登录框动画 */
+.login-container {
+  /* 原有样式保持不变 */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.login-container {
+  /* 当显示时添加的样式 */
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>

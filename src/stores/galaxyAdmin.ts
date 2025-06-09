@@ -3,8 +3,6 @@ import type {
   GalaxyAdministrator,
   AppointAdminRequest,
   RevokeAdminRequest,
-  PaginationParams,
-  AdminListResponse,
   ResponseMessage
 } from '@/types/galaxyAdmin'
 import service from '@/utils/request'
@@ -115,29 +113,18 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
      * @param galaxyId 星系ID
      * @param params 分页参数
      */
-    async fetchAdminList(galaxyId:string, params?: PaginationParams) {
+    async fetchAdminList(galaxyId:string) {
       this.loading = true
       this.error = null
 
       try {
-        const page = params?.page || 1
-        const size = params?.size || this.pagination.pageSize
-
-        const response = await service.get<ResponseMessage<AdminListResponse>>(
+        const response = await service.get<ResponseMessage<GalaxyAdministrator[]>>(
           `/galaxy/admin/list/${galaxyId}`,
-          {
-            params: { page, size }
-          }
         )
 
         if (response.data.code === 200 && response.data.data) {
-          this.currentAdmins = response.data.data.admins
-          this.pagination = {
-            current: page,
-            pageSize: size,
-            total: response.data.data.total
-          }
-          console.log("星系管理员列表获取成功")
+          this.currentAdmins = response.data.data
+          console.log("星系管理员列表获取成功",this.currentAdmins)
           return this.currentAdmins
         }
         throw new Error(response.data.message || '获取管理员列表失败')
@@ -154,10 +141,7 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
      * @param galaxyId 星系ID
      */
     async refreshAdminList(galaxyId:string) {
-      return this.fetchAdminList(galaxyId, {
-        page: this.pagination.current,
-        size: this.pagination.pageSize
-      })
+      return this.fetchAdminList(galaxyId)
     },
 
     /**
@@ -239,13 +223,6 @@ export const useGalaxyAdminStore = defineStore('galaxyAdmin', {
         admin => admin.galaxyId === galaxyId && admin.userId === currentUserId
       )
     },
-
-    /**
-     * 格式化管理员列表（添加用户信息）
-     */
-    formattedAdmins(state) {
-
-      return this.currentAdmins
-    }
+    formattedAdmins: (state) => state.currentAdmins,
   }
 })

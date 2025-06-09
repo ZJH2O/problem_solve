@@ -13,7 +13,7 @@ export const useNotificationStore = defineStore('notification', {
     isLoading: false,
     error: null as string | null,
     currentPage: 1,
-    pageSize: 20,
+    pageSize: 30,
     hasMore: true,
     selectedType: null as number | null,
     showUnreadOnly: false,
@@ -101,6 +101,7 @@ export const useNotificationStore = defineStore('notification', {
 
         if (response.data.code === 200) {
           const newNotifications = response.data.data || []
+          console.log("接受信息",newNotifications)
           if (params?.page === 1) {
             // 第一页，替换数据
             this.notifications = newNotifications
@@ -112,7 +113,7 @@ export const useNotificationStore = defineStore('notification', {
           // 判断是否还有更多
           this.hasMore = newNotifications.length === this.pageSize
           this.currentPage = params?.page || this.currentPage
-
+          this.unreadCount.total = newNotifications.length
           return true
         }
 

@@ -11,7 +11,7 @@ export interface ResponseMessage<T = any> {
 
 // 星系管理员实体
 export interface GalaxyAdministrator {
-  id: number;
+  adminId: number;
   galaxyId: string;
   userId: number;
   createTime: string;

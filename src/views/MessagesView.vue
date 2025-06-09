@@ -304,7 +304,7 @@ onMounted(async () => {
   // 加载通知列表
   await notificationStore.fetchNotifications({
     page: 1,
-    size: 5,
+    size: 30,
     userId:userStore.userInfo.userId
   })
 

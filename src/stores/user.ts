@@ -68,7 +68,7 @@ export const useUserStore = defineStore('user', {
     async login(credentials: { nickname: string; password: string }) {
       this.loading = true
       try {
-        const res = await service.post<ResponseMessage<LoginResponse>>(
+        const res = await service.post<ResponseMessage<string>>(
           '/user/login',
           credentials
         )

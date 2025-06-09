@@ -33,12 +33,11 @@
       <div class="admin-list">
         <div
           v-for="admin in filteredAdmins"
-          :key="admin.userId"
+          :key="admin.adminId"
           class="admin-item"
         >
           <div class="admin-info">
-            <img :src="admin.avatar" alt="头像" class="avatar" v-if="admin.avatar" />
-            <div v-else class="avatar-placeholder">{{ admin.nickname?.charAt(0) }}</div>
+            <div  class="avatar-placeholder">{{ admin.adminId}}</div>
             <div>
 
             </div>
@@ -85,9 +84,9 @@ const currentGalaxyId = computed(() => galaxyStore.currentGalaxy?.galaxyId);
 
 // 过滤后的管理员列表
 const filteredAdmins = computed(() => {
-  if (!adminStore.formattedAdmins) return [];
-
-  return adminStore.formattedAdmins.filter(admin =>
+  if (!adminStore.currentAdmins) return [];
+  console.log("不为空")
+  return adminStore.currentAdmins.filter(admin =>
     admin.nickname?.toLowerCase().includes(searchKeyword.value.toLowerCase())
   );
 });

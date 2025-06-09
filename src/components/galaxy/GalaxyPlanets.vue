@@ -80,7 +80,7 @@ const filteredPlanets = computed(() => {
 // 配置选项
 const PLANET_CONFIG = {
   baseSize: 100,      // 基础大小（减小到250px）
-  maxSize: 350,       // 最大尺寸限制（350px）
+  maxSize: 250,       // 最大尺寸限制（350px）
   sizeRange: 80,      // 尺寸变化范围（从80px减小）
   baseFontSize: 14,   // 基础字体大小
   maxFontSize: 18     // 最大字体大小

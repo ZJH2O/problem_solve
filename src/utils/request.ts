@@ -8,7 +8,7 @@ const TIME_OUT = 20000 // 请求超时时间
 const service: AxiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: TIME_OUT,
-  withCredentials: true, // 新增此项
+  withCredentials: false, // 新增此项
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
   }
