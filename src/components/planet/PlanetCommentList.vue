@@ -47,7 +47,7 @@
             <div class="comment-author">
               <div class="cosmic-avatar" @click="viewUserInfo(comment.userId)">👽</div>
               <div>
-                <span class="username cosmic-username"  @click="viewUserInfo(comment.userId)">星际旅人#{{ comment.userId }}</span>
+                <span class="username cosmic-username"  @click="viewUserInfo(comment.userId)">星际旅客#{{ comment.userId }}</span>
                 <span class="timestamp cosmic-timestamp">{{ formatDateTime(comment.createTime) }}</span>
               </div>
             </div>

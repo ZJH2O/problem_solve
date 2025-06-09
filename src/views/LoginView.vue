@@ -10,11 +10,22 @@
       @click="showLoginContainer = true"
     >
       <h1 class="stellar-main-title">
-        不靠谱星际百科
-        <span class="stellar-subtitle">知识交流平台</span>
+        <!-- 添加幽默元素和科幻感 -->
+      <span class="title-part" style="--delay: 0s">不靠</span>
+      <span class="title-part" style="--delay: 0.2s">谱星</span>
+      <span class="title-part" style="--delay: 0.4s">际百</span>
+      <span class="title-part" style="--delay: 0.6s">科</span>
+      <!-- <span class="title-blink">!</span> -->
       </h1>
+      <div class="stellar-subtitle">
+      <!-- 添加幽默副标题 -->
+      <span class="subtitle-text">知识交流平台</span>
+      <!-- <span class="subtitle-humor">(知识可能扭曲，请系好安全带!)</span> -->
+    </div>
       <div class="stellar-prompt">
-        <i class="fas fa-hand-pointer"></i> 点击进入知识星域
+        <i class="fas fa-hand-pointer"></i>点击进入知识星域
+        <!-- <span class="prompt-text">点击进入知识星域</span> -->
+      <span class="prompt-humor">(小心知识黑洞!)</span>
       </div>
     </div>
 
@@ -119,6 +130,7 @@ const handleLogin = async () => {
       localStorage.removeItem('stellar_credentials')
     }
     //登录成功后的跳转，这里示例跳转到首页
+    alert("登录成功")
     const redirectPath = router.currentRoute.value.query.redirect || '/'
     router.push(redirectPath as string)
   } else {
@@ -475,5 +487,107 @@ const handleLogin = async () => {
   /* 当显示时添加的样式 */
   opacity: 1;
   transform: translateY(0);
+}
+/* 新增幽默标题样式 */
+.stellar-main-title {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.title-part {
+  display: inline-block;
+  animation: text-glitch 5s infinite;
+  animation-delay: var(--delay);
+}
+
+.title-blink {
+  color: #ff00c1;
+  animation: blink 1s infinite alternate;
+  margin-left: 10px;
+  text-shadow: 0 0 10px #ff00c1;
+}
+
+.stellar-subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.subtitle-text {
+  font-size: 1.8rem;
+  letter-spacing: 3px;
+  color: #00f7ff;
+  text-shadow: 0 0 10px #00f7ff80;
+}
+
+.subtitle-humor {
+  font-size: 1rem;
+  color: #ffcc00;
+  font-style: italic;
+  margin-top: 0.5rem;
+  animation: wobble 3s infinite;
+  text-shadow: 0 0 5px #ffcc0080;
+}
+
+.stellar-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.prompt-text {
+  font-size: 1.2rem;
+}
+
+.prompt-humor {
+  font-size: 0.9rem;
+  color: #ff6600;
+  font-style: italic;
+  margin-top: 0.3rem;
+  animation: shake 5s infinite;
+}
+
+/* 新增动画效果 */
+@keyframes text-glitch {
+  0%, 100% {
+    transform: translate(0);
+    text-shadow:
+      0 0 15px #9d4cff80,
+      0 0 25px #3d67ff80;
+  }
+  1%, 99% {
+    transform: translate(-2px, 2px);
+    text-shadow:
+      -2px 0 #ff00c1,
+      2px 0 #00fff9;
+  }
+  2%, 98% {
+    transform: translate(2px, -2px);
+    text-shadow:
+      2px 0 #ff00c1,
+      -2px 0 #00fff9;
+  }
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  75% { transform: rotate(-1deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
 }
 </style>

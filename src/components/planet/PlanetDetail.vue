@@ -5,8 +5,9 @@
     <div class="detail-header cosmic-card">
       <h1 class="title cosmic-glow">{{ planet.contentTitle }}</h1>
       <div class="meta cosmic-data">
-        <span class="visitors">👥 {{ planet.visitCount }} 访问</span>
-        <span class="created-at">📅 {{ formatDateTime(planet.createTime) }}</span>
+        <span class="visitors">👨‍🚀拥有者：星际旅客 #{{ planet.userId }} </span>
+        <span class="visitors">👥访问人数：{{ planet.visitCount }} </span>
+        <span class="created-at">📅创建时间：{{ formatDateTime(planet.createTime) }}</span>
       </div>
       <div class="btn-section">
         <button
