@@ -34,11 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import UserManagement from '@/components/setting/UserManagement.vue'
 import CommentManagement from '@/components/setting/CommentManagement.vue'
 import AdminSettings from '@/components/setting/AdminSettings.vue'
-
+import { useUserStore } from '@/stores/user'
+const userStore = useUserStore()
 const activeTab = ref('users')
 
 const tabs = [
@@ -46,6 +47,10 @@ const tabs = [
   { key: 'comments', label: '评论审核', icon: '💬' },
   { key: 'admins', label: '管理员设置', icon: '🛡️' }
 ]
+
+onMounted(async()=>{
+  await userStore.init()
+})
 </script>
 
 <style scoped>
