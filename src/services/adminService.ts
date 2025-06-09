@@ -1,5 +1,5 @@
 // src/services/adminService.ts
-import api from '@/utils/axios';
+
 import type {
   SystemAdmin,
   AddAdminRequest,
@@ -7,16 +7,18 @@ import type {
   BanUserRequest,
   ApiResponse
 } from '@/types/admin';
+import type{ ResponseMessage } from '@/types/api';
 import service from '@/utils/request';
 
 export default {
   // 获取所有管理员
   async fetchAdmins(): Promise<SystemAdmin[]> {
-    const response: ApiResponse<SystemAdmin[]> = await api.get('/admin/list');
-    if (response.success && response.data) {
-      return response.data;
+    const response = await service.get<ResponseMessage<SystemAdmin[]>>('/admin/list');
+    if (response.data.code === 200) {
+      console.log('获取管理员列表成功:', response.data.data);
+      return response.data.data;
     } else {
-      throw new Error(response.message || '获取管理员列表失败');
+      throw new Error(response.data.message || '获取管理员列表失败');
     }
   },
 
@@ -26,7 +28,7 @@ export default {
     if (!request.permissions) {
       request.permissions = JSON.stringify(["USER_BAN", "CONTENT_DELETE"]);
     }
-    const response: ApiResponse<SystemAdmin> = await api.post('/admin/add', {
+    const response: ApiResponse<SystemAdmin> = await service.post('/admin/add', {
       userId: request.userId,
       permissions: request.permissions
     });
@@ -39,25 +41,25 @@ export default {
 
   // 删除星系评论
   async deleteGalaxyComment(request: DeleteCommentRequest): Promise<boolean> {
-    const response: ApiResponse = await api.delete(`/admin/galaxy/comment/${request.commentId}`, {
+    const response: ApiResponse = await service.delete(`/admin/galaxy/comment/${request.commentId}`, {
       params: { reason: request.reason }
     });
-    if (response.success) {
+    if (response.data.code === 200) {
       return true;
     } else {
-      throw new Error(response.message || '删除星系评论失败');
+      throw new Error(response.data.message || '删除星系评论失败');
     }
   },
 
   // 删除星球评论
   async deletePlanetComment(request: DeleteCommentRequest): Promise<boolean> {
-    const response: ApiResponse = await api.delete(`/admin/planet/comment/${request.commentId}`, {
+    const response: ApiResponse = await service.delete(`/admin/planet/comment/${request.commentId}`, {
       params: { reason: request.reason }
     });
-    if (response.success) {
+    if (response.data.code === 200) {
       return true;
     } else {
-      throw new Error(response.message || '删除星球评论失败');
+      throw new Error(response.data.message || '删除星球评论失败');
     }
   },
 
