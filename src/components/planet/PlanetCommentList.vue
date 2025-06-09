@@ -211,7 +211,7 @@ import { usePlanetStore } from '@/stores/planetStore';
 import type { PlanetCommentDto } from '@/types/comment';
 import { useUserStore } from '@/stores/user';
 import { useFriendStore } from '@/stores/friend';
-import type { UserBrief, viewUser } from '@/types/user';
+import type { UserBrief } from '@/types/user';
 import router from '@/router';
 import type { MessageDto } from '@/types/notification';
 import { useNotificationStore } from '@/stores/notification';
@@ -324,6 +324,16 @@ const toggleLike = async (comment: PlanetCommentDto) => {
     alert('请先登录')
     return
   }
+  // 保存原始状态用于可能的回滚
+  const originalIsLiked = comment.isLiked;
+  const originalLikeCount = comment.likeCount || 0;
+
+  // 1. 立即更新前端状态（乐观更新）
+  comment.isLiked = !comment.isLiked;
+  comment.likeCount = comment.isLiked
+    ? (comment.likeCount || 0) + 1
+    : Math.max(0, (comment.likeCount || 0) - 1);
+
   try{
     commentStore.currentComment = comment
     const data = await commentStore.toggleLike({
@@ -345,6 +355,9 @@ const toggleLike = async (comment: PlanetCommentDto) => {
       })
     }
   }catch(error){
+    comment.isLiked = originalIsLiked;
+    comment.likeCount = originalLikeCount;
+    alert('操作失败，请重试');
     throw new Error(`点赞失败：${error}`)
   }
 };
