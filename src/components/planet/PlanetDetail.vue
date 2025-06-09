@@ -32,7 +32,16 @@
           {{ isFavorite ? '⭐ 已设为星际最爱' : '✨ 设为星际最爱' }}
           <span v-if="favoriting" class="loading"></span>
         </button>
+
+        <div class="planet-theme">
+        <span class="theme-label">主题：</span>
+        <span class="theme-icon">
+          {{ themeIcon }}
+        </span>
+        <span class="theme-name">{{ themeName }}</span>
       </div>
+      </div>
+
 
     </div>
 
@@ -150,10 +159,29 @@ const CDetailForm = reactive({
 })
 
 
+
 const props = defineProps<{
   planet: KnowledgePlanetDto;
 }>();
 
+// 在props下方添加计算星球主题的方法
+const themeName = computed(() => {
+  switch(props.planet.themeId) {
+    case 1: return '学习星球';
+    case 2: return '生活空间';
+    case 3: return '游戏世界';
+    default: return '未知领域';
+  }
+});
+
+const themeIcon = computed(() => {
+  switch(props.planet.themeId) {
+    case 1: return '📚'; // 书本图标
+    case 2: return '🍕'; // 房子图标
+    case 3: return '🎮'; // 游戏手柄图标
+    default: return '🪐'; // 星球图标
+  }
+});
 const favoriting = ref(false);
 const isFavorite = computed(() => {
   return userStore.userInfo?.favoritePlanetId === props.planet.planetId;
@@ -776,7 +804,32 @@ input:focus, textarea:focus {
   border-radius: 4px; /* 圆角 */
 }
 
+/* 新增星球主题样式 */
+.planet-theme {
+  display: flex;
+  align-items: center;
+  border-radius: 30px;
+  font-size: 1rem;
+}
 
+.theme-icon {
+  font-size: 1.8rem;
+  margin: 0 10px;
+  animation: pulse 2s infinite;
+}
+
+.theme-name {
+  font-weight: bold;
+  color: #00eeff;
+  text-shadow: 0 0 8px rgba(0, 238, 255, 0.7);
+}
+
+/* 动画效果 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
 
 
 </style>

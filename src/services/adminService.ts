@@ -7,6 +7,7 @@ import type {
   BanUserRequest,
   ApiResponse
 } from '@/types/admin';
+import service from '@/utils/request';
 
 export default {
   // 获取所有管理员
@@ -62,25 +63,25 @@ export default {
 
   // 封禁用户
   async banUser(request: BanUserRequest): Promise<boolean> {
-    const response: ApiResponse = await api.post('/admin/user/ban', {
+    const response: ApiResponse = await service.post('/admin/user/ban', {
       userId: request.userId,
       reason: request.reason,
       duration: request.duration
     });
-    if (response.success) {
+    if (response.data.code === 200) {
       return true;
     } else {
-      throw new Error(response.message || '封禁用户失败');
+      throw new Error(response.data.message || '封禁用户失败');
     }
   },
 
   // 解封用户
   async unbanUser(userId: number): Promise<boolean> {
-    const response: ApiResponse = await api.post(`/admin/user/unban/${userId}`);
-    if (response.success) {
+    const response: ApiResponse = await service.post(`/admin/user/unban/${userId}`);
+    if (response.data.code === 200) {
       return true;
     } else {
-      throw new Error(response.message || '解封用户失败');
+      throw new Error(response.data.message || '解封用户失败');
     }
   }
 };

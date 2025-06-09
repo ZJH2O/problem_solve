@@ -37,9 +37,9 @@
           class="admin-item"
         >
           <div class="admin-info">
-            <div  class="avatar-placeholder">{{ admin.adminId}}</div>
+            <div  class="cosmic-avatar">👨‍🚀</div>
             <div>
-
+              <div class="cosmic-username">星际旅客#{{ admin.userId }}</div>
             </div>
           </div>
           <button
@@ -85,9 +85,9 @@ const currentGalaxyId = computed(() => galaxyStore.currentGalaxy?.galaxyId);
 // 过滤后的管理员列表
 const filteredAdmins = computed(() => {
   if (!adminStore.currentAdmins) return [];
-  console.log("不为空")
+  console.log("不为空",adminStore.currentAdmins)
   return adminStore.currentAdmins.filter(admin =>
-    admin.nickname?.toLowerCase().includes(searchKeyword.value.toLowerCase())
+    admin.userId
   );
 });
 
@@ -377,5 +377,22 @@ watch(currentGalaxyId, (newId) => {
 .cosmic-btn:hover {
   background: rgba(61, 103, 255, 0.3);
   box-shadow: 0 5px 15px rgba(61, 103, 255, 0.5);
+}
+
+.cosmic-avatar {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-right: 12px;
+}
+
+.cosmic-username {
+  font-weight: bold;
+  color: #00eeff;
 }
 </style>

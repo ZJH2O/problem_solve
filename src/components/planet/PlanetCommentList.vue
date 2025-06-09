@@ -66,7 +66,7 @@
                 {{ activeReplyId === comment.planetCommentId ? '🛸 取消' : '📡 回复' }}
               </button>
               <button @click="toggleCommentDetail(comment)" class="detail-btn cosmic-button">
-              📡 {{ comment.showDetail ? '隐藏详情' : '查看详情' }}
+              📡 {{ comment.showDetail ? '隐藏详情' : '查看详情' }}({{ comment.replies?.length || 0 }})
               </button>
             </div>
           </div>
