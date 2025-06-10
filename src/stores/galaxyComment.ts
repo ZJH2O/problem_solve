@@ -7,9 +7,9 @@ import type {
   ResponseMessage
 } from '@/types/galaxyComment'
 import service from '@/utils/request'
-import { useNotificationStore } from './notification'
+import { useUserStore } from './user'
 
-const notifacationStore = useNotificationStore()
+const userStore = useUserStore()
 
 export const useGalaxyCommentStore = defineStore('galaxyComment',{
   state: () => ({
@@ -67,7 +67,7 @@ export const useGalaxyCommentStore = defineStore('galaxyComment',{
           if (!comment.parentId || !addToTree(this.currentComments)) {
             this.currentComments.unshift(newComment); // 顶级评论置顶
           }
-
+          userStore.init()
           return newComment;
         }
         throw new Error(response.data.message);

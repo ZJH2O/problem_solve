@@ -7,7 +7,8 @@ import type {
 } from '@/types/comment';
 import type { ResponseMessage } from '@/types/api';
 import service from '@/utils/request';
-
+import { useUserStore } from './user';
+const userStore = useUserStore()
 export const useCommentStore = defineStore('comment', {
   state: () => ({
     // 当前星球的所有评论
@@ -56,7 +57,7 @@ export const useCommentStore = defineStore('comment', {
         );
 
         if (res.data.code === 200) {
-
+          userStore.init()
           return res.data.data; // 返回创建的评论ID
         }
 

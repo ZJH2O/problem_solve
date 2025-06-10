@@ -64,6 +64,7 @@ export const usePlanetStore = defineStore('planet', {
         )
         if (response.data.code === 200) {
           await this.init()
+          userStore.init()
           this.planets.push(response.data.data)
           console.log(response.data.data)
           alert("创建星球成功")

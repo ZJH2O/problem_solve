@@ -125,7 +125,6 @@ const handleAddSubmit = async(data: {
   if(!userStore.userInfo?.userId){
     alert("请先登录")
   }
-  userStore.currentFule += 3
   await store.createPlanet({
     ...data,
     userId: userStore.userInfo?.userId??-1,
