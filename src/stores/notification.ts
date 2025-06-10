@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import type { NotificationDto, UnreadCount, ResponseMessage, MessageDto } from '@/types/notification'
 import service from '@/utils/request'
-import { ElMessage } from 'element-plus'
-
+import { useUserStore } from './user'
+const userStore = useUserStore()
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
     notifications: [] as NotificationDto[],
@@ -130,7 +130,12 @@ export const useNotificationStore = defineStore('notification', {
     async fetchUnreadCount() {
       try {
         const response = await service.get<ResponseMessage<UnreadCount>>(
-          '/notification/unread/count'
+          '/notification/unread/count',
+          {
+            params:{
+              userId:userStore.userInfo.userId
+            }
+          }
         )
 
         if (response.data.code === 200) {
@@ -148,7 +153,13 @@ export const useNotificationStore = defineStore('notification', {
     async markAsRead(notificationId: number) {
       try {
         const response = await service.put<ResponseMessage<void>>(
-          `/notification/read/${notificationId}`
+          `/notification/read/${notificationId}`,
+          {
+            params:{
+              notificationId:notificationId,
+              userId:userStore.userInfo.userId
+            }
+          }
         )
 
         if (response.data.code === 200) {
@@ -170,7 +181,7 @@ export const useNotificationStore = defineStore('notification', {
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        ElMessage.error('标记失败')
+       alert('标记失败')
         return false
       }
     },
@@ -180,7 +191,7 @@ export const useNotificationStore = defineStore('notification', {
       try {
         const response = await service.put<ResponseMessage<string>>(
           '/notification/read/batch',
-          { notificationIds }
+          { notificationIds ,userId:userStore.userInfo.userId}
         )
 
         if (response.data.code === 200) {
@@ -196,12 +207,12 @@ export const useNotificationStore = defineStore('notification', {
           // 重新获取未读数量
           await this.fetchUnreadCount()
 
-          ElMessage.success(response.data.data)
+          alert(response.data.data)
           return true
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        ElMessage.error('批量标记失败')
+        alert('批量标记失败')
         return false
       }
     },
@@ -210,7 +221,12 @@ export const useNotificationStore = defineStore('notification', {
     async markAllAsRead() {
       try {
         const response = await service.put<ResponseMessage<string>>(
-          '/notification/read/all'
+          '/notification/read/all',
+          {
+            params:{
+              userId:userStore.userInfo.userId
+            }
+          }
         )
 
         if (response.data.code === 200) {
@@ -228,21 +244,27 @@ export const useNotificationStore = defineStore('notification', {
             byType: {}
           }
 
-          ElMessage.success(response.data.data)
+          alert(response.data.data)
           return true
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        ElMessage.error('全部标记失败')
+        alert("全部标记为已读失败")
         return false
       }
     },
 
     // 删除通知
-    async deleteNotification(notificationId: number) {
+    async deleteNotification(notificationId: number,userId:number) {
       try {
         const response = await service.delete<ResponseMessage<void>>(
-          `/notification/delete/${notificationId}`
+          `/notification/delete/${notificationId}`,
+          {
+            params:{
+              notificationId:notificationId,
+              userId:userId
+            }
+          }
         )
 
         if (response.data.code === 200) {
@@ -251,12 +273,12 @@ export const useNotificationStore = defineStore('notification', {
             n => n.notificationId !== notificationId
           )
 
-          ElMessage.success('删除成功')
+          alert('删除成功')
           return true
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        ElMessage.error('删除失败')
+        alert('删除失败')
         return false
       }
     },
@@ -275,12 +297,12 @@ export const useNotificationStore = defineStore('notification', {
             n => !notificationIds.includes(n.notificationId)
           )
 
-          ElMessage.success(response.data.data)
+          alert(response.data.data)
           return true
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        ElMessage.error('批量删除失败')
+        alert('批量删除失败')
         return false
       }
     },
@@ -300,7 +322,7 @@ export const useNotificationStore = defineStore('notification', {
       }
 
       // 显示提示
-      ElMessage({
+      alert({
         message: notification.title,
         type: 'info',
         duration: 5000,
@@ -313,7 +335,9 @@ export const useNotificationStore = defineStore('notification', {
       this.selectedType = type
       this.currentPage = 1
       this.notifications = []
-      this.fetchNotifications({ page: 1 })
+      this.fetchNotifications({ page: 1,
+        userId:userStore.userInfo.userId
+      })
     },
 
     // 切换只显示未读
@@ -323,7 +347,8 @@ export const useNotificationStore = defineStore('notification', {
       this.notifications = []
       this.fetchNotifications({
         page: 1,
-        isRead: this.showUnreadOnly ? 0 : undefined
+        isRead: this.showUnreadOnly ? 0 : undefined,
+        userId:userStore.userInfo.userId
       })
     },
 
@@ -332,7 +357,8 @@ export const useNotificationStore = defineStore('notification', {
       if (!this.hasMore || this.isLoading) return
 
       await this.fetchNotifications({
-        page: this.currentPage + 1
+        page: this.currentPage + 1,
+        userId:userStore.userInfo.userId
       })
     },
 

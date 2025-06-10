@@ -145,7 +145,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import NotificationItem from '@/components/notification/NotificationItem.vue'
 import webSocketService from '@/services/websocket'
-import { ElMessageBox } from 'element-plus'
+
 import { useUserStore } from '@/stores/user'
 
 const notificationStore = useNotificationStore()
@@ -198,17 +198,8 @@ const handleRead = async (notification: any) => {
 // 处理删除
 const handleDelete = async (notification: any) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要删除这条通知吗？',
-      '删除通知',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
 
-    await notificationStore.deleteNotification(notification.notificationId)
+    await notificationStore.deleteNotification(notification.notificationId,userStore.userInfo.userId)
   } catch (error) {
     // 用户取消
   }
@@ -274,14 +265,6 @@ const reloadNotifications = async () => {
 // 全部标记为已读
 const markAllAsRead = async () => {
   try {
-    await ElMessageBox.confirm(
-      '确定要将所有通知标记为已读吗？',
-      '全部已读',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消'
-      }
-    )
 
     await notificationStore.markAllAsRead()
   } catch (error) {
