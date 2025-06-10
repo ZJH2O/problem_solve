@@ -115,9 +115,10 @@ const handleClick = () => {
 }
 
 // 标记为已读
-const markAsRead = () => {
+const markAsRead = async() => {
   if (props.notification.isRead === 0) {
-    notificationStore.markAsRead(props.notification.notificationId)
+    console.log("组件已读")
+    await notificationStore.markAsRead(props.notification.notificationId)
   }
 }
 

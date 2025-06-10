@@ -166,7 +166,7 @@ const notificationTypes = [
 // 类型信息映射
 const typeInfo = computed(() => {
   const info: Record<number, any> = {}
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 8; i++) {
     info[i] = notificationStore.getTypeInfo(i)
   }
   return info

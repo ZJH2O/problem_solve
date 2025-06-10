@@ -93,7 +93,8 @@ export const useNotificationStore = defineStore('notification', {
               type: params?.type || this.selectedType,
               isRead: params?.isRead,
               page: params?.page || this.currentPage,
-              size: params?.size || this.pageSize,
+              // size: params?.size || this.pageSize,
+              size:100,
               userId: params?.userId
             }
           }
@@ -151,18 +152,23 @@ export const useNotificationStore = defineStore('notification', {
 
     // 标记为已读
     async markAsRead(notificationId: number) {
+      console.log("开始标记")
+      if(!userStore.userInfo.userId){
+        console.log("userId为空")
+      }
       try {
         const response = await service.put<ResponseMessage<void>>(
           `/notification/read/${notificationId}`,
+          null,
           {
             params:{
-              notificationId:notificationId,
               userId:userStore.userInfo.userId
             }
           }
         )
-
+        console.log("开始标记")
         if (response.data.code === 200) {
+          console.log("标记为已读")
           // 更新本地状态
           const notification = this.notifications.find(n => n.notificationId === notificationId)
           if (notification) {
@@ -181,7 +187,8 @@ export const useNotificationStore = defineStore('notification', {
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-       alert('标记失败')
+        console.log(error)
+        alert(`标记失败${error}`)
         return false
       }
     },
@@ -222,6 +229,7 @@ export const useNotificationStore = defineStore('notification', {
       try {
         const response = await service.put<ResponseMessage<string>>(
           '/notification/read/all',
+          null,
           {
             params:{
               userId:userStore.userInfo.userId
@@ -249,7 +257,7 @@ export const useNotificationStore = defineStore('notification', {
         }
         throw new Error(response.data.message)
       } catch (error: any) {
-        alert("全部标记为已读失败")
+        alert(`全部标记为已读失败${error}`)
         return false
       }
     },
@@ -273,7 +281,6 @@ export const useNotificationStore = defineStore('notification', {
             n => n.notificationId !== notificationId
           )
 
-          alert('删除成功')
           return true
         }
         throw new Error(response.data.message)
