@@ -52,6 +52,7 @@
             <div class="header-cell">管理员ID</div>
             <div class="header-cell">用户ID</div>
             <div class="header-cell">状态</div>
+            <div class="header-cell">操作</div>
           </div>
 
           <div
@@ -65,10 +66,15 @@
             <div class="admin-cell status-cell" :class="getStatusClass(admin)">
               {{ getStatusText(admin) }}
             </div>
-
-
-
-
+            <div class="admin-cell action-cell">
+              <button
+                class="action-button delete"
+                @click="confirmDeleteAdmin(admin)"
+                :disabled="adminStore.isLoading"
+              >
+                删除
+              </button>
+            </div>
           </div>
         </div>
 
@@ -92,7 +98,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { SystemAdmin } from '@/types/admin'
 
 const adminStore = useAdminStore()
@@ -129,7 +135,32 @@ const addAdmin = async () => {
   }
 }
 
-
+// 确认删除管理员
+const confirmDeleteAdmin = (admin: SystemAdmin) => {
+  ElMessageBox.confirm(
+    `确定要删除管理员 ${admin.userId} 吗？此操作不可恢复。`,
+    '删除管理员',
+    {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      customClass: 'admin-delete-confirm'
+    }
+  )
+    .then(async () => {
+      try {
+        await adminStore.deleteAdmin(admin.adminId)
+        showFeedback('管理员已删除', 'success')
+        await adminStore.fetchAdmins()
+      } catch (error) {
+        const message = (error as Error).message || '删除管理员失败'
+        showFeedback(message, 'error')
+      }
+    })
+    .catch(() => {
+      // 用户取消操作
+    })
+}
 
 // 重试获取列表
 const retryFetch = async () => {
@@ -308,13 +339,8 @@ const getStatusText = (admin: SystemAdmin) => {
   color: white;
 }
 
-.deactivate {
+.delete {
   background: #ff6b6b;
-  color: white;
-}
-
-.activate {
-  background: #4facfe;
   color: white;
 }
 
@@ -378,8 +404,8 @@ const getStatusText = (admin: SystemAdmin) => {
 }
 
 .action-cell .action-button {
-  padding: 10px 12px;
-  font-size: 1rem;
+  padding: 8px 12px;
+  font-size: 0.9rem;
 }
 
 /* 状态指示器 */
@@ -487,5 +513,45 @@ const getStatusText = (admin: SystemAdmin) => {
   .header-cell, .admin-list h3 {
     font-size: 1.1rem;
   }
+
+  .action-cell {
+    width: 80px;
+  }
+
+  .action-cell .action-button {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+}
+</style>
+
+<style>
+/* 管理员删除确认对话框全局样式 */
+.admin-delete-confirm {
+  background: rgba(15, 30, 60, 0.95) !important;
+  border: 1px solid rgba(255, 100, 100, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(255, 100, 100, 0.2) !important;
+  color: #e0e0ff !important;
+}
+
+.admin-delete-confirm .el-message-box__title {
+  color: #ff6b6b !important;
+  font-weight: 600 !important;
+}
+
+.admin-delete-confirm .el-message-box__content {
+  color: #a0d0ff !important;
+  font-size: 1.1rem !important;
+}
+
+.admin-delete-confirm .el-button--primary {
+  background: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+}
+
+.admin-delete-confirm .el-button--primary:hover {
+  background: #ff4f4f !important;
+  border-color: #ff4f4f !important;
 }
 </style>

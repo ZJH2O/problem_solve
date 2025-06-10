@@ -5,7 +5,8 @@ import type {
   AddAdminRequest,
   DeleteCommentRequest,
   BanUserRequest,
-  ApiResponse
+  ApiResponse,
+  DeleteAdminRequest // 新增类型
 } from '@/types/admin';
 import type{ ResponseMessage } from '@/types/api';
 import service from '@/utils/request';
@@ -85,5 +86,15 @@ export default {
     } else {
       throw new Error(response.data.message || '解封用户失败');
     }
-  }
+  },
+
+  // 删除管理员
+  async deleteAdmin(adminId: number): Promise<boolean> {
+    const response = await service.delete<ResponseMessage>(`/admin/delete/${adminId}`);
+    if (response.data.code === 200) {
+      return true;
+    } else {
+      throw new Error(response.data.message || '删除管理员失败');
+    }
+  },
 };

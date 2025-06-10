@@ -25,6 +25,14 @@ export interface AddAdminRequest {
 }
 
 /**
+ * 删除管理员请求类型
+ * 对应后端 /admin/delete/{adminId} 接口
+ */
+export interface DeleteAdminRequest {
+  adminId: number;      // 管理员ID
+}
+
+/**
  * 删除评论请求类型（星系和星球共用）
  * 对应后端 /admin/galaxy/comment/{commentId} 和 /admin/planet/comment/{commentId} 接口
  */
@@ -50,6 +58,7 @@ export interface BanUserRequest {
 export interface UnbanUserRequest {
   userId: number;        // 被解封用户ID
 }
+
 
 /**
  * API响应格式
