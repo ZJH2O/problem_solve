@@ -85,7 +85,7 @@
       <i class="fas fa-stars"></i>
       <h3>未找到匹配的星系</h3>
       <p>尝试调整搜索条件或创建新的星系</p>
-      <button class="create-btn" @click="addGalaxy">创建新星系</button>
+      <button class="create-btn" @click="addGalaxy">发现新星系</button>
     </div>
   </div>
 

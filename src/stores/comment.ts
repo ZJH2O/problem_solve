@@ -143,7 +143,7 @@ export const useCommentStore = defineStore('comment', {
           {
             params: {
               page,
-              size,
+              size:100,
               userId // 可选参数
             }
           }

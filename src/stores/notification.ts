@@ -114,7 +114,7 @@ export const useNotificationStore = defineStore('notification', {
           // 判断是否还有更多
           this.hasMore = newNotifications.length === this.pageSize
           this.currentPage = params?.page || this.currentPage
-          this.unreadCount.total = newNotifications.length
+
           return true
         }
 

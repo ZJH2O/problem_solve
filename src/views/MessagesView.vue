@@ -134,8 +134,8 @@
 
     <!-- WebSocket连接状态 -->
     <div class="connection-status" :class="{ connected: wsConnected }">
-      <span class="status-icon">{{ wsConnected ? '🟢' : '🔴' }}</span>
-      <span class="status-text">{{ wsConnected ? '实时连接' : '离线模式' }}</span>
+      <span class="status-icon">{{ wsConnected ? '🔴' : '🟢' }}</span>
+      <span class="status-text">{{ wsConnected ? '离线连接' : '在线模式' }}</span>
     </div>
   </div>
 </template>
@@ -160,7 +160,7 @@ const notificationTypes = [
   { value: 5, label: '星球评论点赞', icon: '👍' },
   { value: 6, label: '星球新评论', icon: '📝' },
   { value: 7, label: '系统通知', icon: '📢' },
-  { value: 8, label: '星系管理员任命通知', icon: '📬' }
+  { value: 8, label: '星系分享', icon: '📬' }
 ]
 
 // 类型信息映射
@@ -478,7 +478,7 @@ onUnmounted(async() => {
   border: 1px solid #4a4a8a;
   border-radius: 20px;
   color: #90e0ef;
-  font-size: 0.9rem;
+  font-size: 0.77rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
