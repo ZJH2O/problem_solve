@@ -18,6 +18,8 @@ export interface UserBrief {
   favoritePlanetId?: string
   favorite_galaxy_id?: number
   reward?: Reward
+  lastLoginTime?:string
+  status?:number
 }
 
 export interface TokenState {
