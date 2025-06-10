@@ -64,6 +64,14 @@
           <span>✅</span>
           全部已读
         </button>
+        <button
+          @click="deleteRead"
+          class="action-btn"
+          :disabled="readNotificationsCount === 0"
+        >
+          <span>🗑️</span>
+          删除已读
+        </button>
       </div>
     </div>
 
@@ -277,6 +285,19 @@ const loadMore = () => {
   notificationStore.loadMore()
 }
 
+// 添加计算属性获取已读通知数量
+const readNotificationsCount = computed(() => {
+  return notificationStore.notifications.filter(n => n.isRead === 1).length;
+});
+
+// 添加处理删除已读的方法
+const deleteRead = async () => {
+  try {
+    await notificationStore.deleteNotificationBatch();
+  } catch (error) {
+    console.error("删除已读通知失败", error);
+  }
+};
 // 生命周期
 onMounted(async () => {
   await userStore.init()

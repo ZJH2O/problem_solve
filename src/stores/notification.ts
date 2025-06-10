@@ -291,21 +291,32 @@ export const useNotificationStore = defineStore('notification', {
     },
 
     // 批量删除通知
-    async deleteNotificationBatch(notificationIds: number[]) {
+    async deleteNotificationBatch() {
       try {
+        // 获取所有已读通知的ID
+          const readNotificationIds = this.notifications
+          .filter(n => n.isRead === 1)
+          .map(n => n.notificationId);
+
+        if (readNotificationIds.length === 0) {
+          alert('没有已读通知可删除');
+          return true;
+        }
+        // console.log("开始批量删除")
         const response = await service.delete<ResponseMessage<string>>(
           '/notification/batch',
-          { data: { notificationIds } }
+          {
+            data: { userId:userStore.userInfo.userId,
+            notificationIds:readNotificationIds
+            }
+          }
         )
 
         if (response.data.code === 200) {
           // 从列表中移除
-          this.notifications = this.notifications.filter(
-            n => !notificationIds.includes(n.notificationId)
-          )
-
-          alert(response.data.data)
-          return true
+          this.notifications = this.notifications.filter(n => n.isRead !== 1);
+          alert(response.data.data);
+          return true;
         }
         throw new Error(response.data.message)
       } catch (error: any) {
