@@ -334,7 +334,7 @@ const submitReply = async (comment: GalaxyCommentDto) => {
     alert('回复已成功发射到星际网络！');
   } catch (error) {
     console.error('回复失败:', error);
-    alert('量子回复失败！可能是虫洞干扰');
+    alert('被星际调查局通缉，无法发送评论');
   }
 }
 </script>

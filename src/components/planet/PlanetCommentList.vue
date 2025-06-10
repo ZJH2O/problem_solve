@@ -404,7 +404,7 @@ const submitComment = async () => {
 
   } catch (error) {
     console.error('提交评论失败:', error);
-    alert('提交评论失败，请重试');
+    alert('被星际调查局通缉，无法发送评论');
   } finally {
     isSubmitting.value = false;
   }
@@ -447,7 +447,7 @@ const submitReply = async (comment:PlanetCommentDto) => {
     activeReplyId.value = null;
   } catch (error) {
     console.error('提交回复失败:', error);
-    alert('提交回复失败，请重试');
+    alert('被星际调查局通缉，无法发送评论');
   }
 };
 

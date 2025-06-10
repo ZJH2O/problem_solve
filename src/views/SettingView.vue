@@ -1,5 +1,5 @@
 <template>
-  <div class="setting-view">
+  <div class="setting-view" v-if="isAdmin">
     <!-- 顶部标题 -->
     <div class="stellar-header">
       <h1 class="main-title">星海管理控制台</h1>
@@ -31,17 +31,21 @@
       <AdminSettings v-if="activeTab === 'admins'" />
     </div>
   </div>
+  <div v-else>
+    <NotAdmin />
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import UserManagement from '@/components/setting/UserManagement.vue'
 import CommentManagement from '@/components/setting/CommentManagement.vue'
 import AdminSettings from '@/components/setting/AdminSettings.vue'
 import { useUserStore } from '@/stores/user'
+import NotAdmin from '@/components/setting/NotAdmin.vue'
 const userStore = useUserStore()
 const activeTab = ref('users')
-
+const isAdmin = computed(()=>userStore.isAdmin)
 const tabs = [
   { key: 'users', label: '用户管理', icon: '👤' },
   { key: 'comments', label: '评论审核', icon: '💬' },
@@ -50,6 +54,7 @@ const tabs = [
 
 onMounted(async()=>{
   await userStore.init()
+  await userStore.isSystemAdmin()
 })
 </script>
 

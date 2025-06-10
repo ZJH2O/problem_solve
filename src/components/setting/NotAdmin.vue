@@ -1,11 +1,10 @@
 <template>
   <div class="starlight-container">
     <!-- 粒子背景 -->
-    <div class="space-particle" v-for="(p, i) in particles" :key="i" :style="particleStyle(p)"></div>
 
     <!-- 主要内容 -->
     <div class="starlight-content">
-      <h1 class="nebula-title">🚀 不靠谱星际百科知识交流平台 🪐</h1>
+      <h1 class="nebula-title">🚀 不靠谱星际百科——知识交流平台 🪐</h1>
 
       <div class="warp-drive-section">
         <h2>🛸 曲速航行结束声明</h2>
@@ -90,12 +89,12 @@ const thankGroups = ref<ThankGroup[]>([
 ]);
 
 // 修改机器人管理员名称
-robotName.value = 'R2-Content2';
+robotName.value = '张健豪';
 
 // 添加新的致谢分组
 thankGroups.value.push({
   title: '🦑 外星生物顾问',
-  names: ['Zorg Ambassador', 'Kraken Scholar']
+  names: ['陈正茂老师', '李沛然助教']
 });
 
 // 仿生人编辑
@@ -108,43 +107,13 @@ const currentDate = computed(() => new Date().toLocaleDateString('zh-CN', {
   day: 'numeric'
 }));
 
-// 粒子样式
-const particleStyle = (p: Particle) => ({
-  width: `${p.size}px`,
-  height: `${p.size}px`,
-  left: `${p.x}px`,
-  top: `${p.y}px`,
-  opacity: Math.random() * 0.7 + 0.3,
-  animationDuration: `${p.speed}s`
-});
 
-// 初始化粒子背景
-const initParticles = () => {
-  const count = 150;
-  const newParticles: Particle[] = [];
-
-  for (let i = 0; i < count; i++) {
-    newParticles.push({
-      size: Math.random() * 3 + 1,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      speed: Math.random() * 10 + 5
-    });
-  }
-
-  particles.value = newParticles;
-};
-
-onMounted(() => {
-  initParticles();
-});
 </script>
 
 <style scoped>
 .starlight-container {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0f2b 0%, #020617 100%);
   color: #b6f9ff;
   font-family: 'Orbitron', sans-serif;
   overflow: hidden;
@@ -204,7 +173,7 @@ onMounted(() => {
 .thank-card {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: rgba(20, 40, 80, 0.4);
+  background: rgba(20, 40, 80, 0.263);
   border-radius: 8px;
 }
 

@@ -102,7 +102,8 @@ const submitComment = async () => {
 
   } catch (error:any) {
     console.error('量子传送失败:', error);
-    errorMessage.value = `星际传输中断: ${error.message || '未知错误'}`;
+    // errorMessage.value = `星际传输中断: ${error.message || '未知错误'}`;
+    alert('被星际调查局通缉，无法发送评论');
   } finally {
     submitting.value = false;
   }

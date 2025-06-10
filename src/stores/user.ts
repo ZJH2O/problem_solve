@@ -14,6 +14,7 @@ export const useUserStore = defineStore('user', {
     tokenExpireAt: 0,
     currentFule:0,
     currentDust:0,
+    isAdmin:false
   }),
   getters: {
     currentUser: (state): UserBrief | null => {
@@ -268,6 +269,21 @@ export const useUserStore = defineStore('user', {
         }
       }catch(error){
         console.log(error)
+      }
+    },
+    async isSystemAdmin(){
+      try{
+        const res = await service.get<ResponseMessage<boolean>>(
+          '/admin/isSystemAdmin'
+        )
+        console.log("已获取权限信息")
+        if(res.data.code === 200){
+          this.isAdmin = res.data.data
+          return res.data.data
+        }
+      }catch(error){
+        console.log(error)
+        throw error
       }
     }
   }
