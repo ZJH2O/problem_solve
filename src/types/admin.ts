@@ -10,7 +10,7 @@ export interface SystemAdmin {
   permissions: string;  // JSON格式的权限字符串
   scope?: string | null;  // JSON格式的管辖范围（可选）
   lastLoginIp?: string;  // 最后登录IP（可选）
-  status: number;        // 0-活跃 1-停用
+  status: number;        // 0-不是管理员 1-是管理员
   createTime?: string;   // 创建时间（ISO格式字符串）
   updateTime?: string;   // 更新时间（ISO格式字符串）
 }
@@ -22,6 +22,14 @@ export interface SystemAdmin {
 export interface AddAdminRequest {
   userId: number;        // 被添加的用户ID
   permissions?: string;  // 权限JSON（可选，前端使用默认值）
+}
+
+/**
+ * 删除管理员请求类型
+ * 对应后端 /admin/delete/{adminId} 接口
+ */
+export interface DeleteAdminRequest {
+  adminId: number;      // 管理员ID
 }
 
 /**
@@ -50,6 +58,7 @@ export interface BanUserRequest {
 export interface UnbanUserRequest {
   userId: number;        // 被解封用户ID
 }
+
 
 /**
  * API响应格式

@@ -80,6 +80,22 @@ export const useAdminStore = defineStore('admin', {
         console.error('unbanUser error:', error);
         throw new Error(error.message || '解封用户失败');
       }
+    },
+    // 删除管理员
+    async deleteAdmin(adminId: number) {
+      console.log('Deleting admin with ID:', adminId);
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        await adminService.deleteAdmin(adminId);
+      } catch (error: any) {
+        this.error = error.message || '删除管理员失败';
+        console.error('deleteAdmin error:', error);
+        throw error; // 抛出错误以便组件处理
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 });
