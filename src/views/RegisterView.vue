@@ -33,12 +33,17 @@
           <label class="stellar-label">维度密钥：</label>
           <input
             v-model="registerForm.password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             class="stellar-input"
             placeholder="设置密码"
             @input="validatePassword"
             required
           />
+          <i
+              class="password-toggle fas"
+              :class="showPassword ? 'fa-eye' : 'fa-eye-slash'"
+              @click="togglePassword"
+            ></i>
           <!-- 密码强度指示器 -->
           <div class="password-strength">
             <div class="strength-bar" :style="{ width: strengthPercent }" :class="strengthClass"></div>
@@ -63,6 +68,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { fa } from 'element-plus/lib/locale/index.js'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -78,7 +84,7 @@ const registerForm = ref<RegisterForm>({
   password: '',
   email: ''
 })
-
+const showPassword = ref(false)
 // 邮箱验证状态
 const emailError = ref<string>('')
 // 密码验证状态
@@ -173,6 +179,10 @@ const handleRegister = async () => {
   } else {
     alert('星门连接失败，请检查跃迁参数')
   }
+}
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
 }
 </script>
 
@@ -363,5 +373,23 @@ const handleRegister = async () => {
 @keyframes glow {
   0% { box-shadow: 0 0 5px rgba(0, 247, 255, 0.5); }
   100% { box-shadow: 0 0 15px rgba(0, 247, 255, 0.8); }
+}
+
+.password-toggle {
+  position: relative;
+  right: -290px;
+  top: -25px;
+  transform: translateY(-50%);
+  color: #3d67ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  z-index: 10;
+}
+
+.password-toggle:hover {
+  color: #00f7ff;
+  text-shadow: 0 0 8px rgba(0, 247, 255, 0.5);
 }
 </style>
