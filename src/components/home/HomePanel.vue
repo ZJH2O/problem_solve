@@ -27,7 +27,8 @@
       <!-- 用户头像和基本信息 -->
       <div class="user-profile">
         <div class="avatar-wrapper">
-          <img :src="userBrief?.avatarUrl || '/default-avatar.png'" alt="宇航员头像">
+          <img v-if="userBrief?.avatarUrl" :src="userBrief?.avatarUrl || '/default-avatar.png'" alt="宇航员头像">
+          <div v-else class="cosmic-avatar">👽</div>
           <div class="online-indicator"></div>
 
         </div>
@@ -543,6 +544,17 @@ const togglePanel = () => {
   transform: translateX(0);
   opacity: 1;
 }
-
+.cosmic-avatar {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-right: 12px;
+  border: #00eeff 2px solid;
+}
 
 </style>

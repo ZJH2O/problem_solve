@@ -128,7 +128,8 @@
 
       <div class="modal-body">
         <div class="user-avatar cosmic-avatar-large">
-          {{ viewingUser.avatarUrl }}
+          <div v-if="viewingUser.avatarUrl">{{ viewingUser.avatarUrl }}</div>
+          <div v-else>👽</div>
         </div>
 
         <div class="user-details">

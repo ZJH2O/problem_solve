@@ -25,11 +25,12 @@
           :key="user.userId"
           class="user-card"
         >
-          <img
+          <img v-if="user.avatarUrl"
             :src="user.avatarUrl || '/default-avatar.png'"
             :alt="user.nickname"
             class="user-avatar"
           >
+          <div v-else class="cosmic-avatar">👽</div>
           <div class="user-info">
             <h4 class="user-name">{{ user.nickname }}</h4>
             <p class="user-bio">{{ user.bio || '暂无简介' }}</p>
@@ -392,5 +393,18 @@ const confirmRequest = async () => {
   text-align: center;
   padding: 3rem;
   color: #a0a0ff;
+}
+
+.cosmic-avatar {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-right: 12px;
+  border: #00eeff 2px solid;
 }
 </style>

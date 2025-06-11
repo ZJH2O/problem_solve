@@ -16,12 +16,13 @@
       <!-- 用户信息展示 -->
       <div class="profile-section">
         <div class="avatar-container">
-          <img
+          <img v-if="userStore.userInfo?.avatarUrl"
             :src="userStore.userInfo?.avatarUrl || '/default-avatar.png'"
             alt="用户头像"
             class="user-avatar"
           />
-          <button @click="showAvatarForm = true" class="avatar-edit-btn">
+          <div v-else class="cosmic-avatar">👽</div>
+          <button @click="showAvatarForm = true" class="avatar-edit-btn" @mouseenter="showEditBtn = true" @mouseleave="showEditBtn = false">
             更换头像
           </button>
         </div>
@@ -303,7 +304,7 @@ import { ref, reactive, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
-
+const showEditBtn = ref(false);
 const userStore = useUserStore()
 const router = useRouter()
 // 表单数据
@@ -586,20 +587,6 @@ const handleAccountDelete = async () => {
   animation: float 4s ease-in-out infinite;
 }
 
-.avatar-edit-btn {
-  position: absolute;
-  bottom: 0;
-  right: 10px;
-  background: rgba(10, 25, 47, 0.7);
-  border: 1px solid #00d1ff;
-  box-shadow: 0 0 10px rgba(0, 209, 255, 0.5);
-  color: #b6f9ff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
 
 .avatar-edit-btn:hover {
   background: rgba(0, 150, 255, 0.5);
@@ -852,5 +839,46 @@ input:focus, textarea:focus {
 .form-group textarea {
   min-height: 100px;
   resize: vertical;
+}
+
+.cosmic-avatar {
+  width: 70px;
+  height: 70px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  margin-right: 12px;
+  border: #00eeff 2px solid;
+}
+
+.avatar-container:hover .avatar-edit-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 修改现有的 .avatar-edit-btn 规则 */
+.avatar-edit-btn {
+  /* 添加过渡效果 */
+  transition: all 0.3s ease;
+
+  /* 默认状态下隐藏按钮 */
+  opacity: 0;
+  transform: translateY(10px);
+
+  /* 其他样式保持原样 */
+  position: absolute;
+  bottom: 0;
+  right: 12px;
+  background: rgba(10, 25, 47, 0.7);
+  border: 1px solid #00d1ff;
+  box-shadow: 0 0 10px rgba(0, 209, 255, 0.5);
+  color: #b6f9ff;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  cursor: pointer;
 }
 </style>
