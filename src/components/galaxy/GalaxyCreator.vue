@@ -108,7 +108,8 @@
               <div class="item-label">访问权限</div>
               <div class="item-value">
                 <span :class="`permission-badge ${formData.permission === 1 ? 'public' : 'private'}`">
-                  {{ formData.permission === 1 ? '全宇宙可见' : '仅限授权访问' }}
+                  {{ formData.permission === 1 ?
+                '全宇宙可见' : '仅限授权访问' }}
                 </span>
               </div>
             </div>
@@ -214,7 +215,7 @@ const submit = async () => {
       ...formData.value,
       permission: formData.value.permission ?? 1 // Ensure permission is always defined
     })
-    alert(`星系创建成功！ID: ${id}`)
+    alert(`星系创建成功！`)
     handleClose()
   } catch (error) {
     console.error('创建星系失败:', error)
