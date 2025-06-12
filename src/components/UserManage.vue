@@ -278,7 +278,7 @@
             />
           </div>
 
-          <div class="confirm-actions">
+          <div class="form-actions">
             <button
               @click="showDeleteConfirm = false"
               class="cancel-btn"
@@ -727,6 +727,8 @@ input:focus, textarea:focus {
   transition: all 0.3s;
 }
 
+
+
 .cancel-btn {
   background: rgba(236, 240, 241, 0.1);
   color: #7f8c8d;
@@ -880,5 +882,16 @@ input:focus, textarea:focus {
   width: 70px;
   height: 70px;
   cursor: pointer;
+}
+
+.confirm-delete-btn{
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  border: none;
+  transition: all 0.3s;
 }
 </style>
