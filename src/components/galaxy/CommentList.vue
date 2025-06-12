@@ -74,9 +74,7 @@
             class="reply-item"
           >
             <div class="reply-avatar">
-              <svg class="mini-core">
-                <circle cx="50%" cy="50%" r="40%" fill="#ff00cc" />
-              </svg>
+              <div class="cosmic-avatar">👽</div>
             </div>
             <div class="reply-content">
               <span class="reply-user">外星人{{reply.userId}}</span>
@@ -968,5 +966,18 @@ const submitReply = async (comment: GalaxyCommentDto) => {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(61, 103, 255, 0.4), transparent 70%);
   animation: pulse 2s infinite;
+}
+
+.cosmic-avatar {
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-right: 12px;
+  border: #029be790 2px solid;
 }
 </style>
