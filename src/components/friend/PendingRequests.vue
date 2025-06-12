@@ -14,11 +14,12 @@
       >
         <!-- 用户信息 -->
         <div class="user-info">
-          <img
+          <img v-if="request.friendAvatar"
             :src="request.friendAvatar || '/default-avatar.png'"
             :alt="request.friendNickname"
             class="user-avatar"
           >
+          <div v-else class="cosmic-avatar">👽</div>
           <div class="user-details">
             <h3 class="user-name">{{ request.friendNickname }}</h3>
             <p class="user-bio">{{ request.friendBio || '暂无简介' }}</p>
@@ -259,5 +260,18 @@ const handleReject = async (request: FriendDto) => {
 .btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cosmic-avatar {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-right: 12px;
+  border: #00eeff 2px solid;
 }
 </style>

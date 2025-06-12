@@ -402,6 +402,7 @@ const submitComment = async () => {
 
     // 6. 清空输入框
     newCommentContent.value = '';
+    alert('星球留言成功！获得3个知识星云');
 
   } catch (error) {
     console.error('提交评论失败:', error);
@@ -446,6 +447,7 @@ const submitReply = async (comment:PlanetCommentDto) => {
     // 5. 重置界面状态
     replyContent.value = '';
     activeReplyId.value = null;
+    alert('评论回复成功！获得3个知识星云');
   } catch (error) {
     console.error('提交回复失败:', error);
     alert('被星际调查局通缉，无法发送评论');

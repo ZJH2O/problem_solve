@@ -301,6 +301,7 @@ const RevokeGalaxy = async (galaxyId: string) => {
     });
     // 可选：显示成功消息
     alert(`星系管理员已成功移除`);
+    galaxyStore.init();
   } catch (error) {
     console.error('删除星系失败:', error);
     alert(`删除失败: ${error.message || '请重试'}`);

@@ -99,7 +99,7 @@ const submitComment = async () => {
       content: `星际旅客${props.userId}在你的星系#${props.galaxyId}中评论: "${commentContent.substring(0, 30)}..."`, // 截取部分内容
       type: 3
     });
-
+    alert('评论已成功发送到星际网络！获得3个知识星云');
   } catch (error:any) {
     console.error('量子传送失败:', error);
     // errorMessage.value = `星际传输中断: ${error.message || '未知错误'}`;

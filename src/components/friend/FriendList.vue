@@ -22,11 +22,12 @@
       >
         <!-- 头像区域 -->
         <div class="avatar-section">
-          <img
+          <img v-if ="friend.friendAvatar"
             :src="friend.friendAvatar || '/default-avatar.png'"
             :alt="friend.friendNickname"
             class="friend-avatar"
           >
+          <div v-else class="cosmic-avatar">👽</div>
           <div class="online-indicator" v-if="friend.isOnline"></div>
         </div>
 
@@ -300,5 +301,18 @@ const removeFriend = async (friend: FriendDto) => {
 .action-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cosmic-avatar {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 150, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-right: 12px;
+  border: #00eeff 2px solid;
 }
 </style>

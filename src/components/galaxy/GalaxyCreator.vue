@@ -211,7 +211,7 @@ const submit = async () => {
   isSubmitting.value = true
 
   try {
-    const id = await galaxyStore.createGalaxy({
+    await galaxyStore.createGalaxy({
       ...formData.value,
       permission: formData.value.permission ?? 1 // Ensure permission is always defined
     })
@@ -219,7 +219,7 @@ const submit = async () => {
     handleClose()
   } catch (error) {
     console.error('创建星系失败:', error)
-    alert(`创建失败: ${error || '未知错误'}`)
+    alert(`创建失败: 需要20个知识星云，请先收集知识星云！`)
   } finally {
     isSubmitting.value = false
   }
